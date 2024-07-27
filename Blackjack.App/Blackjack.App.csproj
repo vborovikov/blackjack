@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <Title>Blackjack</Title>
+    <Description>Blackjack card game</Description>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Blackjack\Blackjack.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RelayTk" Version="2.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\app.ico" />
+    <Resource Include="Resources\*.png" />
+    </ItemGroup>
+
+</Project>
