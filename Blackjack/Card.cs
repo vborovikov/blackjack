@@ -1,102 +1,92 @@
-﻿namespace Blackjack
+﻿namespace Blackjack;
+
+using System;
+
+public enum CardSuit
 {
-    using System;
+    Joker,
+    Hearts,
+    Diamonds,
+    Clubs,
+    Spades,
+}
 
-    public enum CardSuit
+public enum CardRank
+{
+    None,
+    Ace,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King,
+}
+
+public readonly struct Card : IEquatable<Card>
+{
+    public const int MinScore = 2;
+    public const int MaxScore = 11;
+    public static readonly Card Joker = new();
+
+    public static readonly Card[] StandardDeck;
+
+    static Card()
     {
-        Joker,
-        Hearts,
-        Diamonds,
-        Clubs,
-        Spades,
+        StandardDeck = new Card[52];
+        for (var suit = CardSuit.Hearts; suit <= CardSuit.Spades; ++suit)
+            for (var rank = CardRank.Ace; rank <= CardRank.King; ++rank)
+                StandardDeck[(((int)suit - 1) * 13) + (int)rank - 1] = new Card(suit, rank);
     }
 
-    public enum CardRank
+    public Card(CardSuit suit, CardRank rank)
     {
-        None,
-        Ace,
-        Two,
-        Three,
-        Four,
-        Five,
-        Six,
-        Seven,
-        Eight,
-        Nine,
-        Ten,
-        Jack,
-        Queen,
-        King,
+        this.Suit = suit;
+        this.Rank = rank;
     }
 
-    public readonly struct Card : IEquatable<Card>
+    public CardSuit Suit { get; }
+
+    public CardRank Rank { get; }
+
+    public int Score => this.Rank switch
     {
-        public const int MinScore = 2;
-        public const int MaxScore = 11;
-        public static readonly Card Joker = new Card();
+        CardRank.Jack or CardRank.Queen or CardRank.King => 10,
+        _ => (int)this.Rank
+    };
 
-        public static readonly Card[] StandardDeck;
+    public int Order => this.Rank switch
+    {
+        CardRank.Ace => MaxScore,
+        CardRank.Jack or CardRank.Queen or CardRank.King => 10,
+        _ => (int)this.Rank
+    };
 
-        static Card()
-        {
-            StandardDeck = new Card[52];
-            for (var suit = CardSuit.Hearts; suit <= CardSuit.Spades; ++suit)
-                for (var rank = CardRank.Ace; rank <= CardRank.King; ++rank)
-                    StandardDeck[(((int)suit - 1) * 13) + (int)rank - 1] = new Card(suit, rank);
-        }
+    public static bool operator ==(Card left, Card right) => left.Equals(right);
 
-        public Card(CardSuit suit, CardRank rank)
-        {
-            this.Suit = suit;
-            this.Rank = rank;
-        }
+    public static bool operator !=(Card left, Card right) => !(left == right);
 
-        public CardSuit Suit { get; }
+    public static char RankToSymbol(CardRank rank) => rank switch
+    {
+        CardRank.Jack => 'T',
+        CardRank.Queen => 'T',
+        CardRank.King => 'T',
+        CardRank.Ten => 'T',
+        CardRank.Ace => 'A',
+        _ => (char)(0x30 + (((int)rank) % 10))
+    };
 
-        public CardRank Rank { get; }
+    public override bool Equals(object obj) => obj is Card other && Equals(other);
 
-        public int Score => this.Rank switch
-        {
-            CardRank.Jack => 10,
-            CardRank.Queen => 10,
-            CardRank.King => 10,
-            _ => (int)this.Rank
-        };
+    public bool Equals(Card other) => this.Suit == other.Suit && this.Rank == other.Rank;
 
-        public int Order => this.Rank switch
-        {
-            CardRank.Ace => MaxScore,
-            CardRank.Jack => 10,
-            CardRank.Queen => 10,
-            CardRank.King => 10,
-            _ => (int)this.Rank
-        };
+    public override int GetHashCode() => HashCode.Combine(this.Suit, this.Rank);
 
-        public static bool operator ==(Card left, Card right) => left.Equals(right);
-
-        public static bool operator !=(Card left, Card right) => !(left == right);
-
-        public static char RankToSymbol(CardRank rank) => rank switch
-        {
-            CardRank.Jack => 'T',
-            CardRank.Queen => 'T',
-            CardRank.King => 'T',
-            CardRank.Ten => 'T',
-            CardRank.Ace => 'A',
-            _ => (char)(0x30 + (((int)rank) % 10))
-        };
-
-        public override bool Equals(object obj) => obj switch
-        {
-            null => false,
-            Card other => Equals(other),
-            _ => false
-        };
-
-        public bool Equals(Card other) => this.Suit == other.Suit && this.Rank == other.Rank;
-
-        public override int GetHashCode() => HashCode.Combine(this.Suit, this.Rank);
-
-        public override string ToString() => RankToSymbol(this.Rank).ToString();
-    }
+    public override string ToString() => RankToSymbol(this.Rank).ToString();
 }

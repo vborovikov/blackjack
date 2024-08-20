@@ -59,8 +59,7 @@ namespace Blackjack.Tests
                     var first = sixes[i];
                     var second = sixes[j];
 
-                    Assert.AreEqual(first, second);
-                    Assert.AreEqual(first.GetHashCode(), second.GetHashCode());
+                    Assert.AreEqual(first, second, Hand.LayoutEqualityComparer);
                     Assert.AreEqual("6-6", first.ToString());
                     Assert.AreEqual("6-6", second.ToString());
                 }
