@@ -119,7 +119,7 @@
                         this.moveControls[move.Key] = moveControl;
                     }
 
-                    moveControl.Value = move.Value;
+                    moveControl.SetCurrentValue(HandMoveControl.ValueProperty, move.Value);
                 }
             }
         }
