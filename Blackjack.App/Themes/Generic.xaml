@@ -17,6 +17,18 @@
                 Value="Left" />
         <Setter Property="VerticalAlignment"
                 Value="Top" />
+        <Setter Property="HeaderTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"
+                               FontSize="36"
+                               FontWeight="Bold"
+                               Foreground="LightGray"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:StrategyControl}">
@@ -63,8 +75,9 @@
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                                               ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
                                               ContentStringFormat="{TemplateBinding HeaderStringFormat}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
                                               Margin="8"
                                               Grid.Row="1" />
                         </Grid>
