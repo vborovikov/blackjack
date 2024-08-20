@@ -60,8 +60,10 @@
         <ScrollViewer HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Horizontal">
-                <ctrl:StrategyControl Rules="{Binding Player1}" />
-                <ctrl:StrategyControl Rules="{Binding Player2}" />
+                <ctrl:StrategyControl Rules="{Binding Player1}"
+                                      Header="Random" />
+                <ctrl:StrategyControl Rules="{Binding Player2}"
+                                      Header="Basic" />
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

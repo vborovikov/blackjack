@@ -26,7 +26,7 @@
                             SnapsToDevicePixels="True">
                         <Grid Margin="{TemplateBinding Padding}">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
@@ -38,27 +38,35 @@
                                     BorderThickness="0,0,1,1"
                                     Margin="8"
                                     HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Grid.RowSpan="2">
+                                    VerticalAlignment="Top">
                                 <Grid x:Name="HardHandGrid" />
                             </Border>
-                            <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="0,0,1,1"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="8"
-                                    Grid.Column="1">
-                                <Grid x:Name="SoftHandGrid" />
-                            </Border>
-                            <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="0,0,1,1"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="8"
-                                    Grid.Row="1"
-                                    Grid.Column="1">
-                                <Grid x:Name="PairHandGrid" />
-                            </Border>
+                            <StackPanel Orientation="Vertical"
+                                        Grid.RowSpan="2"
+                                        Grid.Column="1">
+                                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="0,0,1,1"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Margin="8">
+                                    <Grid x:Name="SoftHandGrid" />
+                                </Border>
+                                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="0,0,1,1"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Margin="8">
+                                    <Grid x:Name="PairHandGrid" />
+                                </Border>
+                            </StackPanel>
+                            <ContentPresenter Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                                              ContentStringFormat="{TemplateBinding HeaderStringFormat}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="8"
+                                              Grid.Row="1" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
