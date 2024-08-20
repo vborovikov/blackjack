@@ -46,21 +46,21 @@ public class StrategyControl : HeaderedControl
 
         if (GetTemplateChild(TemplateParts.HardHandGrid) is Grid hardHandGrid)
         {
-            SetupRuleGrid(hardHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Hard));
+            SetupRuleGrid(hardHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Hard), nameof(HandKind.Hard));
         }
         if (GetTemplateChild(TemplateParts.SoftHandGrid) is Grid softHandGrid)
         {
-            SetupRuleGrid(softHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Soft));
+            SetupRuleGrid(softHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Soft), nameof(HandKind.Soft));
         }
         if (GetTemplateChild(TemplateParts.PairHandGrid) is Grid pairHandGrid)
         {
-            SetupRuleGrid(pairHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Pair));
+            SetupRuleGrid(pairHandGrid, Hand.Deals.Where(h => h.Kind == HandKind.Pair), nameof(HandKind.Pair));
         }
 
         OnRulesChanged(RulesProperty.ChangedEventArgs(this.Rules));
     }
 
-    private void SetupRuleGrid(Grid grid, IEnumerable<Hand> deals)
+    private void SetupRuleGrid(Grid grid, IEnumerable<Hand> deals, string caption)
     {
         var length = GridLength.Auto;
         grid.Children.Clear();
@@ -69,6 +69,17 @@ public class StrategyControl : HeaderedControl
 
         grid.RowDefinitions.Add(new RowDefinition { Height = length });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = length });
+
+        var captionCtrl = new TextBlock
+        {
+            Text = caption,
+            Foreground = SystemColors.GrayTextBrush,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            RenderTransform = new RotateTransform(-45),
+            RenderTransformOrigin = new Point(0.5, 0.5),
+        };
+        grid.Children.Add(captionCtrl);
 
         for (var i = 0; i != Dealer.Upcards.Length; ++i)
         {

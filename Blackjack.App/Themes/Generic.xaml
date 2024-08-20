@@ -26,7 +26,7 @@
                             SnapsToDevicePixels="True">
                         <Grid Margin="{TemplateBinding Padding}">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
