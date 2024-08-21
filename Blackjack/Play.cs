@@ -23,7 +23,7 @@ public static class PlayerExtensions
 public abstract class Player : IEnumerable<Hand>
 {
     public static readonly Player Basic = new BasicPlayer();
-    public static readonly Player None = new NonePlayer();
+    public static readonly Player None = new Bystander();
 
     protected const char CardSeparator = '/';
     protected const char MoveSeparator = ':';
@@ -340,7 +340,7 @@ file sealed class BasicPlayer : Player
     }
 }
 
-file sealed class NonePlayer : Player
+file sealed class Bystander : Player
 {
     protected override HandMove? MoveOverride(Hand hand, Card upcard)
     {
