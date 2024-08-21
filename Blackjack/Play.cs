@@ -1,9 +1,8 @@
 ﻿namespace Blackjack;
 
-using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using static System.String;
 
@@ -265,9 +264,9 @@ public class AdaptivePlayer : CustomPlayer
     }
 }
 
-internal sealed class BasicPlayer : Player
+file sealed class BasicPlayer : Player
 {
-    public static readonly IReadOnlyDictionary<string, HandMove> Strategy;
+    public static readonly FrozenDictionary<string, HandMove> Strategy;
 
     private const string BasicStrategyTable =
         //  23456789TA
@@ -330,21 +329,18 @@ internal sealed class BasicPlayer : Player
             )
             .ToDictionary(rule => rule.Play, rule => rule.Move);
 
-        Strategy = new ReadOnlyDictionary<string, HandMove>(basicStrategyMap);
+        Strategy = basicStrategyMap.ToFrozenDictionary();
     }
 
     public override string ToString() => ToString(Strategy);
 
     protected override HandMove? MoveOverride(Hand hand, Card upcard)
     {
-        if (Strategy.TryGetValue(GetPlay(hand, upcard), out var move))
-            return move;
-
-        return null;
+        return Strategy.GetValueRefOrNullRef(GetPlay(hand, upcard));
     }
 }
 
-internal sealed class NonePlayer : Player
+file sealed class NonePlayer : Player
 {
     protected override HandMove? MoveOverride(Hand hand, Card upcard)
     {
