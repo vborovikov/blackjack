@@ -5,18 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 
-public readonly struct Bet
-{
-    public Hand Hand { get; }
-
-    public int Chips { get; }
-}
+public readonly record struct Bet(Hand hand, int Chips);
 
 public class Dealer : HandBase
 {
+    public const int BlackjackScore = 21;
+
     public static readonly Card[] Upcards;
 
     private readonly Shoe shoe;
+    private readonly Dictionary<Hand, Bet> bets;
 
     static Dealer()
     {
@@ -39,6 +37,7 @@ public class Dealer : HandBase
     public Dealer() : base(bank: 50000)
     {
         this.shoe = Shoe.Shuffle();
+        this.bets = [];
     }
 
     public override string ToString() => this.FirstCard.ToString();
@@ -46,25 +45,40 @@ public class Dealer : HandBase
     public void Play(IList<Hand> hands)
     {
         PlaceBets(hands);
+
+        // first deal
         Deal(hands);
+        // second deal
         Deal(hands);
 
         // check naturals, including the dealer
-        var isNatural = this.FirstCard.Score is 1 or 10 && this.IsNatural;
+        var dealerIsNatural = this.FirstCard.Score is 1 or 10 && this.IsNatural;
         foreach (var hand in hands)
         {
             if (hand.IsNatural)
             {
-                //todo: for natural pay 1.5 of their bets, for tie return the bets
-                hand.Set(isNatural ? HandPlay.Tie : HandPlay.Blackjack);
+                if (dealerIsNatural)
+                {
+                    hand.Set(HandPlay.Tie);
+                    //todo: return the bets
+                    ReturnBet(hand);
+                }
+                else
+                {
+                    hand.Set(HandPlay.Blackjack);
+                    //todo: pay 1.5 of their bets
+                    PayBet(hand, multiplier: 1.5f);
+                }
             }
-            else if (isNatural)
+            else if (dealerIsNatural)
             {
-                //todo: collect the bets
                 hand.Set(HandPlay.Loss);
+                //todo: collect the bets
+                CollectBet(hand);
             }
         }
 
+        // third deal
         for (var i = 0; i != hands.Count; ++i)
         {
             var hand = hands[i];
@@ -81,15 +95,17 @@ public class Dealer : HandBase
             }
 
             var handScore = hand.Score();
-            if (handScore == 21)
+            if (handScore == BlackjackScore)
             {
-                //todo: pay bets
                 hand.Set(HandPlay.Blackjack);
+                //todo: pay bets
+                PayBet(hand);
             }
-            else if (handScore > 21)
+            else if (handScore > BlackjackScore)
             {
-                //todo: collect bets
                 hand.Set(HandPlay.Bust);
+                //todo: collect bets
+                CollectBet(hand);
             }
         }
 
@@ -100,7 +116,7 @@ public class Dealer : HandBase
         }
 
         var dealerScore = this.Score();
-        //todo: resolve bets
+        // resolve bets
         foreach (var hand in hands)
         {
             if (hand.Play != HandPlay.None)
@@ -108,23 +124,74 @@ public class Dealer : HandBase
 
             if (dealerScore > 21)
             {
-                // pay bets
+                //todo: pay bets to all
+                PayBet(hand);
             }
             else if (dealerScore == 21)
             {
-                // collect bets
                 hand.Set(HandPlay.Loss);
+                //todo: collect bets
+                CollectBet(hand);
             }
             else
             {
-                // pay or collect bets
-                hand.Set(hand.Score() > dealerScore ? HandPlay.Win : HandPlay.Loss);
+                if (hand.Score() > dealerScore)
+                {
+                    hand.Set(HandPlay.Win);
+                    //todo: pay bets
+                    PayBet(hand);
+                }
+                else
+                {
+                    hand.Set(HandPlay.Loss);
+                    //todo: collect bets
+                    CollectBet(hand);
+                }
             }
         }
     }
 
     private void PlaceBets(IEnumerable<Hand> hands)
     {
+        foreach (var hand in hands)
+        {
+            PlaceBet(hand);
+        }
+    }
+
+    private void PlaceBet(Hand hand, bool doubleDown = false)
+    {
+        if (doubleDown)
+        {
+            this.bets.Remove(hand);
+        }
+
+        this.bets.Add(hand, hand.MakeBet(doubleDown));
+    }
+
+    private void PayBet(Hand hand, float multiplier = 1.0f)
+    {
+        if (this.bets.Remove(hand, out var bet))
+        {
+            var reward = bet with { Chips = bet.Chips + Pop((int)MathF.Ceiling(bet.Chips * multiplier)) };
+            hand.ResolveBet(reward);
+        }
+    }
+
+    private void CollectBet(Hand hand)
+    {
+        if (this.bets.Remove(hand, out var bet))
+        {
+            Push(bet.Chips);
+        }
+    }
+
+    private void ReturnBet(Hand hand)
+    {
+        if (this.bets.Remove(hand, out var bet))
+        {
+            hand.ResolveBet(bet);
+        }
     }
 
     private Hand[] Play(Hand hand)
@@ -143,14 +210,18 @@ public class Dealer : HandBase
 
                 if (handMove == HandMove.Split)
                 {
-                    otherHands.Add(hand.Split());
+                    var anotherHand = hand.Split();
+                    otherHands.Add(anotherHand);
+                    //todo: place new bet
+                    PlaceBet(anotherHand);
                 }
                 else if (handMove == HandMove.Double)
                 {
-                    //todo: place new bet
                     var handScore = hand.Score();
                     if (handScore >= 9 && handScore <= 11)
                     {
+                        //todo: place new bet
+                        PlaceBet(hand, doubleDown: true);
                     }
                     else
                     {

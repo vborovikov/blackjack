@@ -8,14 +8,14 @@ using static System.String;
 
 public static class PlayerExtensions
 {
-    public static IList<Hand> Play(this Player player, int handCount = 4) =>
-        EnumerateHands(player, handCount).ToList();
+    public static IList<Hand> Play(this Player player, int handCount = 4, int bank = Hand.DefaultBank) =>
+        EnumerateHands(player, handCount, bank).ToList();
 
-    private static IEnumerable<Hand> EnumerateHands(this Player player, int handCount)
+    private static IEnumerable<Hand> EnumerateHands(this Player player, int handCount, int bank)
     {
         for (var i = 0; i != handCount; ++i)
         {
-            yield return player.BeginPlay();
+            yield return player.BeginPlay(bank);
         }
     }
 }
@@ -59,9 +59,9 @@ public abstract class Player : IEnumerable<Hand>
         return Concat(hand, CardSeparator, upcard);
     }
 
-    public Hand BeginPlay()
+    public Hand BeginPlay(int bank = Hand.DefaultBank)
     {
-        return new Hand(this);
+        return new Hand(this, bank);
     }
 
     public HandMove Move(Hand hand, Card upcard)

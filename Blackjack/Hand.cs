@@ -43,7 +43,7 @@ public abstract class HandBase
         this.Bank = bank;
     }
 
-    public int Bank { get; }
+    public int Bank { get; private set; }
 
     public Card FirstCard => this.cards.Count > 0 ? this.cards[0] : Card.Joker;
     public bool IsNatural => this.cards.Count == 2 && Score() == 21;
@@ -68,10 +68,29 @@ public abstract class HandBase
     {
         this.cards.Add(card);
     }
+
+    protected int Pop(int chips) 
+    {
+        if (chips < 0 || this.Bank < chips)
+            throw new ArgumentOutOfRangeException(nameof(chips));
+
+        this.Bank -= chips;
+        return chips;
+    }
+
+    protected void Push(int chips)
+    {
+        if (chips < 0)
+            throw new ArgumentOutOfRangeException(nameof(chips));
+
+        this.Bank += chips;
+    }
 }
 
 public sealed class Hand : HandBase, IEnumerable<Card>
 {
+    public const int DefaultBank = 1000;
+
     private sealed class HandLayoutEqualityComparer : IEqualityComparer<Hand>
     {
         public bool Equals(Hand x, Hand y)
@@ -123,7 +142,9 @@ public sealed class Hand : HandBase, IEnumerable<Card>
             .ToArray();
     }
 
-    public Hand(Player player) : base(bank: 1000)
+    public Hand(Player player) : this(player, DefaultBank) { }
+
+    public Hand(Player player, int bank) : base(bank)
     {
         this.player = player;
     }
@@ -132,7 +153,7 @@ public sealed class Hand : HandBase, IEnumerable<Card>
     {
     }
 
-    private Hand(Player player, Card card) : this(player)
+    private Hand(Player player, Card card, int bank) : this(player, bank)
     {
         this.IsSplit = true;
         Hit(card);
@@ -175,13 +196,28 @@ public sealed class Hand : HandBase, IEnumerable<Card>
 
         var secondCard = this.cards[1];
         this.cards.RemoveAt(1);
-        return new Hand(this.player, secondCard);
+        return new Hand(this.player, secondCard, Pop(Math.Max(250, this.Bank / 3)));
     }
 
     public void Set(HandPlay play)
     {
         this.Play = play;
         this.player.EndPlay(this);
+    }
+
+    public Bet MakeBet(bool doubleDown = false)
+    {
+        //todo: develop a betting strategy
+        var factor = doubleDown ? 2 : 4;
+        if (this.IsSplit)
+            factor /= 2;
+
+        return new(this, Pop(this.Bank / factor));
+    }
+
+    public void ResolveBet(Bet bet)
+    {
+        Push(bet.Chips);
     }
 
     public IEnumerator<Card> GetEnumerator() => this.cards.GetEnumerator();

@@ -35,13 +35,14 @@
         {
             using (WithStatus("Playing"))
             {
-                await Task.Run(() => Parallel.For(0, 100000, playNumber =>
+                await Parallel.ForAsync(0, 100000, (playNumber, cancellationToken) =>
                 {
                     var dealer = new Dealer();
                     dealer.Play(this.player1.Play());
 
                     RaisePropertyChanged(nameof(this.Player1));
-                }));
+                    return ValueTask.CompletedTask;
+                });
             }
         }
     }

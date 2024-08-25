@@ -2,6 +2,9 @@
 
 using System;
 
+/// <summary>
+/// Specifies the suit of a playing card.
+/// </summary>
 public enum CardSuit
 {
     Joker,
@@ -11,6 +14,9 @@ public enum CardSuit
     Spades,
 }
 
+/// <summary>
+/// Specifies the rank of a playing card.
+/// </summary>
 public enum CardRank
 {
     None,
@@ -29,6 +35,9 @@ public enum CardRank
     King,
 }
 
+/// <summary>
+/// Represents a playing card.
+/// </summary>
 public readonly struct Card : IEquatable<Card>
 {
     public const int MinScore = 2;
@@ -55,6 +64,8 @@ public readonly struct Card : IEquatable<Card>
 
     public CardRank Rank { get; }
 
+    public bool IsFaceCard => this.Rank >= CardRank.Jack && this.Rank <= CardRank.King;
+
     public int Score => this.Rank switch
     {
         CardRank.Jack or CardRank.Queen or CardRank.King => 10,
@@ -74,11 +85,8 @@ public readonly struct Card : IEquatable<Card>
 
     public static char RankToSymbol(CardRank rank) => rank switch
     {
-        CardRank.Jack => 'T',
-        CardRank.Queen => 'T',
-        CardRank.King => 'T',
-        CardRank.Ten => 'T',
         CardRank.Ace => 'A',
+        CardRank.Jack or CardRank.Queen or CardRank.King or CardRank.Ten => 'T',
         _ => (char)(0x30 + (((int)rank) % 10))
     };
 
