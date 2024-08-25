@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 
-public readonly record struct Bet(Hand hand, int Chips);
+public readonly record struct Bet(Hand Hand, int Chips);
 
 public class Dealer : HandBase
 {
@@ -78,77 +79,178 @@ public class Dealer : HandBase
             }
         }
 
-        // third deal
-        for (var i = 0; i != hands.Count; ++i)
+        // third and next deals
+        var dealAgain = false;
+        do
+        {
+            dealAgain = DealAgain(hands);
+        } while (dealAgain);
+    }
+
+    private bool DealAgain(IList<Hand> hands)
+    {
+        var wouldDealAgain = false;
+        var dealerScore = Score();
+
+        for (var i = 0; i < hands.Count; ++i)
         {
             var hand = hands[i];
             if (hand.Play != HandPlay.None)
                 continue;
 
-            var otherHands = Play(hand);
-            if (hand.Play != HandPlay.Wrong)
+            if (dealerScore >= 17)
             {
-                foreach (var otherHand in otherHands)
-                {
-                    hands.Insert(++i, otherHand);
-                }
-            }
+                // resolve bets
 
-            var handScore = hand.Score();
-            if (handScore == BlackjackScore)
-            {
-                hand.Set(HandPlay.Blackjack);
-                //todo: pay bets
-                PayBet(hand);
-            }
-            else if (handScore > BlackjackScore)
-            {
-                hand.Set(HandPlay.Bust);
-                //todo: collect bets
-                CollectBet(hand);
-            }
-        }
-
-        // dealer's turn
-        while (Score() < 17)
-        {
-            Hit(this.shoe.Draw());
-        }
-
-        var dealerScore = this.Score();
-        // resolve bets
-        foreach (var hand in hands)
-        {
-            if (hand.Play != HandPlay.None)
-                continue;
-
-            if (dealerScore > 21)
-            {
-                //todo: pay bets to all
-                PayBet(hand);
-            }
-            else if (dealerScore == 21)
-            {
-                hand.Set(HandPlay.Loss);
-                //todo: collect bets
-                CollectBet(hand);
-            }
-            else
-            {
-                if (hand.Score() > dealerScore)
+                if (dealerScore > BlackjackScore)
                 {
                     hand.Set(HandPlay.Win);
-                    //todo: pay bets
+                    //todo: pay bets to all
                     PayBet(hand);
                 }
-                else
+                else if (dealerScore == BlackjackScore)
                 {
                     hand.Set(HandPlay.Loss);
                     //todo: collect bets
                     CollectBet(hand);
                 }
             }
+
+            if (Play(hand, out var splitHand))
+            {
+                // insert the split Hand after this Hand but skip both
+                hands.Insert(++i, splitHand);
+            }
+
+            if (hand.Play == HandPlay.Wrong)
+            {
+                CollectBet(hand);
+                if (splitHand is not null)
+                {
+                    CollectBet(splitHand);
+                }
+            }
+            else
+            {
+                PayOut(hand, dealerScore);
+                if (splitHand is not null)
+                {
+                    PayOut(splitHand, dealerScore);
+                }
+            }
+
+            wouldDealAgain = wouldDealAgain || (hand.Play == HandPlay.None || splitHand?.Play == HandPlay.None);
         }
+
+        // dealer's turn
+        if (dealerScore < 17)
+        {
+            Hit(this.shoe.Draw());
+        }
+
+        return wouldDealAgain;
+    }
+
+    private void PayOut(Hand hand, int dealerScore)
+    {
+        var handScore = hand.Score();
+        if (handScore == BlackjackScore)
+        {
+            hand.Set(HandPlay.Blackjack);
+            //todo: pay bets
+            PayBet(hand);
+        }
+        else if (handScore > BlackjackScore)
+        {
+            hand.Set(HandPlay.Bust);
+            //todo: collect bets
+            CollectBet(hand);
+        }
+        else if (dealerScore >= 17)
+        {
+            if (handScore > dealerScore)
+            {
+                hand.Set(HandPlay.Win);
+                //todo: pay bets
+                PayBet(hand);
+            }
+            else if (handScore < dealerScore)
+            {
+                hand.Set(HandPlay.Loss);
+                //todo: collect bets
+                CollectBet(hand);
+            }
+        }
+    }
+
+    private void Deal(IEnumerable<Hand> hands)
+    {
+        if (this.cards.Count >= 2)
+            throw new InvalidOperationException();
+
+        foreach (var hand in hands)
+        {
+            hand.Hit(this.shoe.Draw());
+        }
+        Hit(this.shoe.Draw());
+    }
+
+    private bool Play(Hand hand, [MaybeNullWhen(false)] out Hand splitHand)
+    {
+        splitHand = default;
+
+        try
+        {
+            var handMove = hand.Move(this.FirstCard);
+            if (handMove == HandMove.Stand)
+            {
+                return false;
+            }
+
+            if (handMove == HandMove.Split)
+            {
+                if (hand.Kind == HandKind.Pair)
+                {
+                    splitHand = hand.Split();
+
+                    //todo: place new bet
+                    PlaceBet(splitHand);
+                    hand.Hit(this.shoe.Draw());
+                    splitHand.Hit(this.shoe.Draw());
+
+                    return true;
+                }
+                else
+                {
+                    hand.Set(HandPlay.Wrong);
+                    return false;
+                }
+            }
+            else if (handMove == HandMove.Double)
+            {
+                if (hand.Score() is 9 or 10 or 11)
+                {
+                    //todo: place new bet
+                    PlaceBet(hand, doubleDown: true);
+                    hand.Hit(this.shoe.Draw());
+                }
+                else
+                {
+                    hand.Set(HandPlay.Wrong);
+                }
+
+                return false;
+            }
+
+            hand.Hit(this.shoe.Draw());
+        }
+        catch (Exception)
+        {
+            hand.Set(HandPlay.Wrong);
+            splitHand?.Set(HandPlay.Wrong);
+        }
+
+        return splitHand is not null;
     }
 
     private void PlaceBets(IEnumerable<Hand> hands)
@@ -192,69 +294,6 @@ public class Dealer : HandBase
         {
             hand.ResolveBet(bet);
         }
-    }
-
-    private Hand[] Play(Hand hand)
-    {
-        var otherHands = new List<Hand>();
-
-        try
-        {
-            var handMove = HandMove.Stand;
-            do
-            {
-                handMove = hand.Move(this.FirstCard);
-
-                if (handMove == HandMove.Stand)
-                    break;
-
-                if (handMove == HandMove.Split)
-                {
-                    var anotherHand = hand.Split();
-                    otherHands.Add(anotherHand);
-                    //todo: place new bet
-                    PlaceBet(anotherHand);
-                }
-                else if (handMove == HandMove.Double)
-                {
-                    var handScore = hand.Score();
-                    if (handScore >= 9 && handScore <= 11)
-                    {
-                        //todo: place new bet
-                        PlaceBet(hand, doubleDown: true);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-
-                hand.Hit(this.shoe.Draw());
-            }
-            while (handMove != HandMove.Stand);
-        }
-        catch (Exception)
-        {
-            hand.Set(HandPlay.Wrong);
-            //foreach (var otherHand in otherHands)
-            //{
-            //    otherHand.Set(HandPlay.Wrong);
-            //}
-        }
-
-        return otherHands.ToArray();
-    }
-
-    private void Deal(IEnumerable<Hand> hands)
-    {
-        if (this.cards.Count >= 2)
-            throw new InvalidOperationException();
-
-        foreach (var hand in hands)
-        {
-            hand.Hit(this.shoe.Draw());
-        }
-        Hit(this.shoe.Draw());
     }
 }
 
