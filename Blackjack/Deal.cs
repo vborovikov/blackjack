@@ -10,6 +10,8 @@ public readonly record struct Bet(Hand Hand, int Chips);
 
 public class Dealer : HandBase
 {
+    private const int StandScore = 17;
+
     public static readonly Card[] Upcards;
 
     private readonly Shoe shoe;
@@ -96,7 +98,7 @@ public class Dealer : HandBase
             if (hand.Play != HandPlay.None)
                 continue;
 
-            if (dealerScore >= 17)
+            if (dealerScore >= StandScore)
             {
                 // resolve bets
 
@@ -141,7 +143,7 @@ public class Dealer : HandBase
         }
 
         // dealer's turn
-        if (dealerScore < 17)
+        if (dealerScore < StandScore)
         {
             Hit(this.shoe.Draw());
         }
@@ -164,7 +166,7 @@ public class Dealer : HandBase
             //todo: collect bets
             CollectBet(hand);
         }
-        else if (dealerScore >= 17)
+        else if (dealerScore >= StandScore)
         {
             if (handScore > dealerScore)
             {
