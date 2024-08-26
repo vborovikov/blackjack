@@ -10,8 +10,6 @@ public readonly record struct Bet(Hand Hand, int Chips);
 
 public class Dealer : HandBase
 {
-    public const int BlackjackScore = 21;
-
     public static readonly Card[] Upcards;
 
     private readonly Shoe shoe;

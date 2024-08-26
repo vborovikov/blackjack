@@ -35,6 +35,8 @@ public enum HandPlay
 
 public abstract class HandBase
 {
+    public const int BlackjackScore = 21;
+
     protected readonly List<Card> cards;
 
     protected HandBase(int bank)
@@ -46,7 +48,7 @@ public abstract class HandBase
     public int Bank { get; private set; }
 
     public Card FirstCard => this.cards.Count > 0 ? this.cards[0] : Card.Joker;
-    public bool IsNatural => this.cards.Count == 2 && Score() == 21;
+    public bool IsNatural => this.cards.Count == 2 && Score() == BlackjackScore;
     protected bool HasAce => this.cards.Any(card => card.Rank == CardRank.Ace);
 
     public override string ToString() =>
@@ -135,7 +137,7 @@ public sealed class Hand : HandBase, IEnumerable<Card>
             .ToArray();
 
         Deals = AllDeals
-            .Where(h => h.Score() < 21)
+            .Where(h => h.Score() < BlackjackScore)
             .Distinct(LayoutEqualityComparer)
             .OrderBy(hand => hand.Kind)
             .ThenByDescending(hand => hand.Sum(c => c.Order))

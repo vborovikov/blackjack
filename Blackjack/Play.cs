@@ -66,7 +66,7 @@ public abstract class Player : IEnumerable<Hand>
 
     public HandMove Move(Hand hand, Card upcard)
     {
-        var move = MoveOverride(hand, upcard) ?? HandMove.Stand;
+        var move = MoveOverride(hand, upcard);
         OnHandMoved(hand, upcard, move);
         return move;
     }
@@ -98,7 +98,7 @@ public abstract class Player : IEnumerable<Hand>
     {
     }
 
-    protected abstract HandMove? MoveOverride(Hand hand, Card upcard);
+    protected abstract HandMove MoveOverride(Hand hand, Card upcard);
 
     protected virtual void OnHandMoved(Hand hand, Card upcard, HandMove move)
     {
@@ -200,12 +200,12 @@ public class CustomPlayer : Player
         }
     }
 
-    protected override HandMove? MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard)
     {
         if (this.ruleMap.TryGetValue(GetPlay(hand, upcard), out var move))
             return move;
 
-        return null;
+        return HandMove.Stand;
     }
 
     protected void MakeRule(string play, HandMove move)
@@ -334,15 +334,15 @@ file sealed class BasicPlayer : Player
 
     public override string ToString() => ToString(Strategy);
 
-    protected override HandMove? MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard)
     {
-        return Strategy.GetValueRefOrNullRef(GetPlay(hand, upcard));
+        return Strategy.GetValueOrDefault(GetPlay(hand, upcard));
     }
 }
 
 file sealed class Bystander : Player
 {
-    protected override HandMove? MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard)
     {
         return HandMove.Stand;
     }
