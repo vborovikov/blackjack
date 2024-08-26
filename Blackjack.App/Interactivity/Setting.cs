@@ -23,7 +23,7 @@ public class Setting : Binding
             JsonValueKind.Number => p.Value.GetDouble(),
             JsonValueKind.True or JsonValueKind.False => p.Value.GetBoolean(),
             _ => null,
-        });
+        }, StringComparer.Ordinal);
     }
 
     public Setting(string path)

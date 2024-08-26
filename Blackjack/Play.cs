@@ -59,7 +59,7 @@ public abstract class Player : IEnumerable<Hand>
             .Split(RuleSeparator)
             .Where(rule => !IsNullOrWhiteSpace(rule))
             .Select(rule => rule.Split(MoveSeparator))
-            .ToDictionary(rule => rule[0], rule => SymbolToMove(rule[1][0]));
+            .ToDictionary(rule => rule[0], rule => SymbolToMove(rule[1][0]), StringComparer.Ordinal);
         return rules;
     }
 
@@ -177,9 +177,9 @@ file sealed class BasicPlayer : Player
                     Move = m
                 })
             )
-            .ToDictionary(rule => rule.Play, rule => rule.Move);
+            .ToDictionary(rule => rule.Play, rule => rule.Move, StringComparer.Ordinal);
 
-        Strategy = basicStrategyMap.ToFrozenDictionary();
+        Strategy = basicStrategyMap.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
     public override string Name => "Basic";
