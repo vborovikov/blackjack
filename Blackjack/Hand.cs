@@ -89,7 +89,7 @@ public abstract class HandBase
     }
 }
 
-public sealed class Hand : HandBase, IEnumerable<Card>
+public class Hand : HandBase, IReadOnlyCollection<Card>
 {
     public const int DefaultBank = 1000;
 
@@ -155,11 +155,13 @@ public sealed class Hand : HandBase, IEnumerable<Card>
     {
     }
 
-    private Hand(Player player, Card card, int bank) : this(player, bank)
+    protected Hand(Player player, Card card, int bank) : this(player, bank)
     {
         this.IsSplit = true;
         Hit(card);
     }
+
+    public int Count => this.cards.Count;
 
     public Card SecondCard => this.cards.Count > 1 ? this.cards[1] : Card.Joker;
 
@@ -186,7 +188,7 @@ public sealed class Hand : HandBase, IEnumerable<Card>
         _ => base.ToString()
     };
 
-    public HandMove Move(Card upcard, int dealerScore)
+    public virtual HandMove Move(Card upcard, int dealerScore)
     {
         return this.player.Move(this, upcard, dealerScore);
     }
@@ -198,7 +200,12 @@ public sealed class Hand : HandBase, IEnumerable<Card>
 
         var secondCard = this.cards[1];
         this.cards.RemoveAt(1);
-        return new Hand(this.player, secondCard, Pop(Math.Max(250, this.Bank / 3)));
+        return Split(secondCard);
+    }
+
+    protected virtual Hand Split(Card card)
+    {
+        return new Hand(this.player, card, Pop(Math.Max(250, this.Bank / 3)));
     }
 
     public void Set(HandPlay play)
