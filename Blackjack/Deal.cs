@@ -325,12 +325,6 @@ public class Shoe
         return source.OrderBy(_ => RandomNumberGenerator.GetInt32(int.MaxValue));
     }
 
-    public static T[] Shuffle<T>(params T[] source)
-    {
-        RandomNumberGenerator.Shuffle(source.AsSpan());
-        return source;
-    }
-
     public Card Draw()
     {
         return this.cards.Pop();

@@ -1,10 +1,13 @@
 ﻿namespace Blackjack;
 
+using System;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using static System.String;
+using PlayRule = System.Collections.Generic.KeyValuePair<string, HandMove>;
 
 public static class PlayerExtensions
 {
@@ -35,6 +38,8 @@ public abstract class Player : IEnumerable<Hand>
     {
         this.hands = [];
     }
+
+    public abstract string Name { get; }
 
     public static char MoveToSymbol(HandMove move) => move switch
     {
@@ -91,7 +96,7 @@ public abstract class Player : IEnumerable<Hand>
 
     protected static char MoveIndexToScoreSymbol(int i) => Card.RankToSymbol(Dealer.Upcards[i].Rank);
 
-    protected static string ToString(IEnumerable<KeyValuePair<string, HandMove>> strategy) =>
+    protected static string ToString(IEnumerable<PlayRule> strategy) =>
         Join(RuleSeparator, strategy.Select(play => Concat(play.Key, MoveSeparator, MoveToSymbol(play.Value))));
 
     protected virtual void OnPlayEnded(Hand hand)
@@ -107,39 +112,34 @@ public abstract class Player : IEnumerable<Hand>
 
 public class CustomPlayer : Player
 {
-    private readonly Dictionary<string, HandMove> ruleMap;
+    protected static readonly HandMove[] AllMoves = [HandMove.Stand, HandMove.Hit, HandMove.Double, HandMove.Split];
 
-    public CustomPlayer() : this([])
+    private readonly string name;
+    private readonly FrozenDictionary<string, HandMove> ruleMap;
+
+    private CustomPlayer() { }
+
+    private protected CustomPlayer(string name, IEnumerable<PlayRule> rules)
     {
+        this.name = name;
+        this.ruleMap = rules.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
-    private CustomPlayer(IEnumerable<KeyValuePair<string, HandMove>> rules)
+    public override string Name => this.name;
+
+    protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
-        this.ruleMap = new Dictionary<string, HandMove>(rules);
+        return this.ruleMap.GetValueOrDefault(GetPlay(hand, upcard));
     }
 
-    public static CustomPlayer CreateHitman()
-    {
-        var hitman = new CustomPlayer();
+    public override string ToString() => ToString(this.ruleMap);
 
-        foreach (var deal in from hand in Hand.Deals
-                             from upcard in Dealer.Upcards
-                             select new { hand, upcard })
-        {
-            hitman.MakeRule(GetPlay(deal.hand, deal.upcard), HandMove.Hit);
-        }
+    public static CustomPlayer CreateRandom() => new("Random", MakeRandomRules());
 
-        return hitman;
-    }
-
-    public static CustomPlayer CreateRandom()
-    {
-        var random = new CustomPlayer();
-
-        MakeRandomRules(random);
-
-        return random;
-    }
+    public static CustomPlayer CreateHitman() => new("Hitman",
+        from hand in Hand.Deals
+        from upcard in Dealer.Upcards
+        select new PlayRule(GetPlay(hand, upcard), HandMove.Hit));
 
     public static IEnumerable<CustomPlayer> MakeChildren(CustomPlayer player1, CustomPlayer player2)
     {
@@ -176,7 +176,7 @@ public class CustomPlayer : Player
                 {
                     for (var yii = yi + 1; yii != y.Length; ++yii)
                     {
-                        children.Add(new CustomPlayer(x[xi].Concat(x[xii]).Concat(y[yi]).Concat(y[yii])));
+                        children.Add(new CustomPlayer("Child", x[xi].Concat(x[xii]).Concat(y[yi]).Concat(y[yii])));
                         if (children.Count == numChildren)
                             return children.ToArray();
                     }
@@ -187,45 +187,27 @@ public class CustomPlayer : Player
         return children.ToArray();
     }
 
-    public override string ToString() => ToString(this.ruleMap.ToArray());
-
-    protected static void MakeRandomRules(CustomPlayer player)
+    public static IEnumerable<PlayRule> MakeRandomRules()
     {
         foreach (var play in from hand in Hand.Deals
                              from upcard in Dealer.Upcards
-                             select new { hand, upcard })
+                             select (hand, upcard))
         {
-            player.MakeRule(GetPlay(play.hand, play.upcard),
-                Shoe.Shuffle(HandMove.Hit, HandMove.Stand, HandMove.Double, HandMove.Split).First());
+            yield return new(GetPlay(play.hand, play.upcard),
+                AllMoves[RandomNumberGenerator.GetInt32(0, play.hand.Kind == HandKind.Pair ? AllMoves.Length : AllMoves.Length - 1)]);
         }
-    }
-
-    protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
-    {
-        if (this.ruleMap.TryGetValue(GetPlay(hand, upcard), out var move))
-            return move;
-
-        return HandMove.Stand;
-    }
-
-    protected void MakeRule(string play, HandMove move)
-    {
-        this.ruleMap[play] = move;
     }
 }
 
 public class AdaptivePlayer : CustomPlayer
 {
-    private static readonly HandMove[] AllMoves = { HandMove.Stand, HandMove.Hit, HandMove.Double, HandMove.Split };
     private readonly Dictionary<Hand, Dictionary<string, HandMove>> moves;
     private readonly Dictionary<string, HashSet<HandMove>> wrongMoves;
 
-    public AdaptivePlayer()
+    public AdaptivePlayer() : base("Adaptive", MakeRandomRules())
     {
         this.moves = [];
         this.wrongMoves = [];
-
-        MakeRandomRules(this);
     }
 
     protected override void OnPlayEnded(Hand hand)
@@ -244,7 +226,7 @@ public class AdaptivePlayer : CustomPlayer
                 }
                 if (playWrongMoves.Add(lastMove.Value))
                 {
-                    MakeRule(lastMove.Key, Shoe.Shuffle(AllMoves.Except(playWrongMoves)).First());
+                    //MakeRule(lastMove.Key, Shoe.Shuffle(AllMoves.Except(playWrongMoves)).First());
                 }
             }
         }
@@ -259,7 +241,7 @@ public class AdaptivePlayer : CustomPlayer
                 handMoves = [];
                 this.moves.Add(hand, handMoves);
             }
-            handMoves.Add(GetPlay(hand, upcard), move);
+            handMoves.TryAdd(GetPlay(hand, upcard), move);
         }
     }
 }
@@ -332,6 +314,8 @@ file sealed class BasicPlayer : Player
         Strategy = basicStrategyMap.ToFrozenDictionary();
     }
 
+    public override string Name => "Basic";
+
     public override string ToString() => ToString(Strategy);
 
     protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
@@ -342,6 +326,8 @@ file sealed class BasicPlayer : Player
 
 file sealed class Bystander : Player
 {
+    public override string Name => "Bystander";
+
     protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
         return HandMove.Stand;

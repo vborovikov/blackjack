@@ -61,9 +61,9 @@
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Horizontal">
                 <ctrl:StrategyControl Rules="{Binding Player1}"
-                                      Header="Random" />
+                                      Header="{Binding Player1.Name}" />
                 <ctrl:StrategyControl Rules="{Binding Player2}"
-                                      Header="Basic" />
+                                      Header="{Binding Player2.Name}" />
             </StackPanel>
         </ScrollViewer>
     </DockPanel>
