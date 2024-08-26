@@ -186,9 +186,9 @@ public sealed class Hand : HandBase, IEnumerable<Card>
         _ => base.ToString()
     };
 
-    public HandMove Move(Card upcard)
+    public HandMove Move(Card upcard, int dealerScore)
     {
-        return this.player.Move(this, upcard);
+        return this.player.Move(this, upcard, dealerScore);
     }
 
     public Hand Split()

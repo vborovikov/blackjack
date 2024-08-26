@@ -116,7 +116,7 @@ public class Dealer : HandBase
                 }
             }
 
-            if (Play(hand, out var splitHand))
+            if (Play(hand, dealerScore, out var splitHand))
             {
                 // insert the split Hand after this Hand but skip both
                 hands.Insert(++i, splitHand);
@@ -195,13 +195,13 @@ public class Dealer : HandBase
         Hit(this.shoe.Draw());
     }
 
-    private bool Play(Hand hand, [MaybeNullWhen(false)] out Hand splitHand)
+    private bool Play(Hand hand, int dealerScore, [MaybeNullWhen(false)] out Hand splitHand)
     {
         splitHand = default;
 
         try
         {
-            var handMove = hand.Move(this.FirstCard);
+            var handMove = hand.Move(this.FirstCard, dealerScore);
             if (handMove == HandMove.Stand)
             {
                 return false;

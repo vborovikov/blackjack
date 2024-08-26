@@ -64,10 +64,10 @@ public abstract class Player : IEnumerable<Hand>
         return new Hand(this, bank);
     }
 
-    public HandMove Move(Hand hand, Card upcard)
+    public HandMove Move(Hand hand, Card upcard, int dealerScore)
     {
-        var move = MoveOverride(hand, upcard);
-        OnHandMoved(hand, upcard, move);
+        var move = MoveOverride(hand, upcard, dealerScore);
+        OnHandMoved(hand, upcard, dealerScore, move);
         return move;
     }
 
@@ -98,9 +98,9 @@ public abstract class Player : IEnumerable<Hand>
     {
     }
 
-    protected abstract HandMove MoveOverride(Hand hand, Card upcard);
+    protected abstract HandMove MoveOverride(Hand hand, Card upcard, int dealerScore);
 
-    protected virtual void OnHandMoved(Hand hand, Card upcard, HandMove move)
+    protected virtual void OnHandMoved(Hand hand, Card upcard, int dealerScore, HandMove move)
     {
     }
 }
@@ -200,7 +200,7 @@ public class CustomPlayer : Player
         }
     }
 
-    protected override HandMove MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
         if (this.ruleMap.TryGetValue(GetPlay(hand, upcard), out var move))
             return move;
@@ -250,7 +250,7 @@ public class AdaptivePlayer : CustomPlayer
         }
     }
 
-    protected override void OnHandMoved(Hand hand, Card upcard, HandMove move)
+    protected override void OnHandMoved(Hand hand, Card upcard, int dealerScore, HandMove move)
     {
         lock (((ICollection)this.moves).SyncRoot)
         {
@@ -334,7 +334,7 @@ file sealed class BasicPlayer : Player
 
     public override string ToString() => ToString(Strategy);
 
-    protected override HandMove MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
         return Strategy.GetValueOrDefault(GetPlay(hand, upcard));
     }
@@ -342,7 +342,7 @@ file sealed class BasicPlayer : Player
 
 file sealed class Bystander : Player
 {
-    protected override HandMove MoveOverride(Hand hand, Card upcard)
+    protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
         return HandMove.Stand;
     }
