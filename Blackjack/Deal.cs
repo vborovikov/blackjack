@@ -98,7 +98,7 @@ public class Dealer : HandBase
             if (hand.Play != HandPlay.None)
                 continue;
 
-            if (dealerScore >= StandScore)
+            if (dealerScore >= BlackjackScore)
             {
                 // resolve bets
 
@@ -114,6 +114,8 @@ public class Dealer : HandBase
                     //todo: collect bets
                     CollectBet(hand);
                 }
+
+                continue;
             }
 
             if (Play(hand, dealerScore, out var splitHand))
