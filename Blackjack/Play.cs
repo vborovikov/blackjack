@@ -4,13 +4,14 @@ using System;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography;
-using static System.String;
-using PlayRule = System.Collections.Generic.KeyValuePair<string, HandMove>; //todo: (string Layout, HandMove Value)
-using DealerPlay = (Card Upcard, int Score);
-using System.Threading;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Threading;
+using static System.String;
+using DealerPlay = (Card Upcard, int Score);
+using PlayRule = System.Collections.Generic.KeyValuePair<string, HandMove>; //todo: (string Layout, HandMove Value)
 
 public static class PlayerExtensions
 {
@@ -303,8 +304,18 @@ public class AdaptivePlayer : Player
 
         public LuckyHand(AdaptivePlayer player, int bank) : base(player, bank) { }
 
-        public override string ToString() =>
-            Join("-", this.cards.Take(2).OrderByDescending(card => card.Order));
+        public override string ToString()
+        {
+            var isHard = this.FirstCard.Rank != this.SecondCard.Rank && 
+                this.FirstCard.Rank != CardRank.Ace && this.SecondCard.Rank != CardRank.Ace;
+
+            if (isHard)
+            {
+                return (this.FirstCard.Score + this.SecondCard.Score).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return Join("-", this.cards.Take(2).OrderByDescending(card => card.Order));
+        }
 
         public string Layout => GetPlay(this, this.dealerPlay.Upcard);
 
@@ -356,7 +367,7 @@ public class AdaptivePlayer : Player
 
     protected override void OnPlayEnded(Hand hand)
     {
-        if (hand is LuckyHand lucky)
+        if (hand is LuckyHand { IsNatural: false } lucky)
         {
             ref var move = ref CollectionsMarshal.GetValueRefOrNullRef(this.moves, lucky.Layout);
             move.Weight += lucky.Play switch
