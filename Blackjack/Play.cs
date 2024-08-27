@@ -29,6 +29,8 @@ public static class PlayerExtensions
 
 public abstract class Player : IEnumerable<Hand>
 {
+    protected static readonly HandMove[] AllMoves = [HandMove.Stand, HandMove.Hit, HandMove.Double, HandMove.Split];
+
     public static readonly Player Basic = new BasicPlayer();
     public static readonly Player None = new Bystander();
 
@@ -204,8 +206,6 @@ file sealed class Bystander : Player
 
 public class CustomPlayer : Player
 {
-    protected static readonly HandMove[] AllMoves = [HandMove.Stand, HandMove.Hit, HandMove.Double, HandMove.Split];
-
     private readonly string name;
     private readonly FrozenDictionary<string, HandMove> ruleMap;
 
@@ -291,13 +291,15 @@ public class CustomPlayer : Player
 
     public static HandMove GetRandomMove(Hand hand)
     {
-        return AllMoves[RandomNumberGenerator.GetInt32(0, 
+        return AllMoves[RandomNumberGenerator.GetInt32(0,
             hand.FirstCard.Rank == hand.SecondCard.Rank ? AllMoves.Length : AllMoves.Length - 1)];
     }
 }
 
 public class AdaptivePlayer : Player
 {
+    protected static readonly HandMove[] NoSplitMoves = AllMoves[..^1];
+
     private sealed class LuckyHand : Hand
     {
         private DealerPlay? dealerPlay;
@@ -306,7 +308,7 @@ public class AdaptivePlayer : Player
 
         public override string ToString()
         {
-            var isHard = this.FirstCard.Rank != this.SecondCard.Rank && 
+            var isHard = this.FirstCard.Rank != this.SecondCard.Rank &&
                 this.FirstCard.Rank != CardRank.Ace && this.SecondCard.Rank != CardRank.Ace;
 
             if (isHard)
@@ -334,14 +336,50 @@ public class AdaptivePlayer : Player
         }
     }
 
-    private sealed record LuckyHandMove(HandMove Value)
+    private sealed class LuckyHandMove
     {
+        private readonly Stack<HandMove> moves;
         private int weight;
+
+        public LuckyHandMove(Hand hand)
+        {
+            this.moves = new(hand.Kind == HandKind.Pair ? Shoe.Shuffle(AllMoves) : Shoe.Shuffle(NoSplitMoves));
+        }
+
+        public HandMove Value => this.moves.Peek();
 
         public int Weight
         {
             get => this.weight;
             set => Interlocked.Exchange(ref this.weight, value);
+        }
+
+        public bool TryChange()
+        {
+            var lockTaken = false;
+            try
+            {
+                Monitor.TryEnter(((ICollection)this.moves).SyncRoot, ref lockTaken);
+
+                if (lockTaken)
+                {
+                    if (this.moves.Count > 1)
+                    {
+                        this.moves.Pop();
+                        this.weight = 0;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            finally
+            {
+                if (lockTaken)
+                {
+                    Monitor.Exit(((ICollection)this.moves).SyncRoot);
+                }
+            }
         }
     }
 
@@ -349,8 +387,10 @@ public class AdaptivePlayer : Player
 
     public AdaptivePlayer()
     {
-        this.moves = CustomPlayer.MakeRandomRules()
-            .ToDictionary(e => e.Key, e => new LuckyHandMove(e.Value), StringComparer.Ordinal);
+        this.moves = (from hand in Hand.Deals
+                      from upcard in Dealer.Upcards
+                      select (Layout: GetPlay(hand, upcard), Hand: hand))
+                    .ToDictionary(e => e.Layout, e => new LuckyHandMove(e.Hand), StringComparer.Ordinal);
     }
 
     public override string Name => "Adaptive";
@@ -384,10 +424,7 @@ public class AdaptivePlayer : Player
 
             if (move.Weight < -12)
             {
-                move = move with
-                {
-                    Value = GetRandomMoveExcept(hand, move.Value)
-                };
+                move.TryChange();
             }
         }
     }
