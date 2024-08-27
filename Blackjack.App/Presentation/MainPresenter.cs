@@ -35,14 +35,15 @@
         {
             using (WithStatus("Playing"))
             {
-                await Parallel.ForAsync(0, 100000, (playNumber, cancellationToken) =>
-                {
-                    var dealer = new Dealer();
-                    dealer.Play(this.player1.Play());
+                await Parallel.ForAsync(0, 100000, new ParallelOptions { MaxDegreeOfParallelism = 1 },
+                    (playNumber, cancellationToken) =>
+                    {
+                        var dealer = new Dealer();
+                        dealer.Play(this.player1.Play());
 
-                    RaisePropertyChanged(nameof(this.Player1));
-                    return ValueTask.CompletedTask;
-                });
+                        RaisePropertyChanged(nameof(this.Player1));
+                        return ValueTask.CompletedTask;
+                    });
             }
         }
     }

@@ -369,7 +369,7 @@ public class AdaptivePlayer : Player
 
     protected override void OnPlayEnded(Hand hand)
     {
-        if (hand is LuckyHand { HasMoved: true } lucky)
+        if (hand is LuckyHand { IsNatural: false, HasMoved: true } lucky)
         {
             ref var move = ref CollectionsMarshal.GetValueRefOrNullRef(this.moves, lucky.Layout);
             move.Weight += lucky.Play switch

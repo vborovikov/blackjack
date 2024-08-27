@@ -182,6 +182,11 @@ public class Dealer : HandBase
                 //todo: collect bets
                 CollectBet(hand);
             }
+            else
+            {
+                hand.Set(HandPlay.Tie);
+                ReturnBet(hand);
+            }
         }
     }
 
