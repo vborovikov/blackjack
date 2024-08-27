@@ -338,47 +338,25 @@ public class AdaptivePlayer : Player
 
     private sealed class LuckyHandMove
     {
-        private readonly Stack<HandMove> moves;
-        private int weight;
+        private record struct WeightedMove(HandMove Value, int Weight);
+
+        private readonly WeightedMove[] moves;
 
         public LuckyHandMove(Hand hand)
         {
-            this.moves = new(hand.Kind == HandKind.Pair ? Shoe.Shuffle(AllMoves) : Shoe.Shuffle(NoSplitMoves));
+            this.moves = (hand.Kind == HandKind.Pair ? Shoe.Shuffle(AllMoves) : Shoe.Shuffle(NoSplitMoves))
+                .Select(value => new WeightedMove(value, 0))
+                .ToArray();
         }
 
-        public HandMove Value => this.moves.Peek();
+        public HandMove Value => this.moves[0].Value;
 
-        public int Weight
+        public void Adjust(int delta)
         {
-            get => this.weight;
-            set => Interlocked.Exchange(ref this.weight, value);
-        }
-
-        public bool TryChange()
-        {
-            var lockTaken = false;
-            try
+            lock (this.moves.SyncRoot)
             {
-                Monitor.TryEnter(((ICollection)this.moves).SyncRoot, ref lockTaken);
-
-                if (lockTaken)
-                {
-                    if (this.moves.Count > 1)
-                    {
-                        this.moves.Pop();
-                        this.weight = 0;
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-            finally
-            {
-                if (lockTaken)
-                {
-                    Monitor.Exit(((ICollection)this.moves).SyncRoot);
-                }
+                this.moves[0] = this.moves[0] with { Weight = this.moves[0].Weight + delta };
+                Array.Sort(this.moves, (x, y) => x.Weight < y.Weight ? +1 : x.Weight > y.Weight ? -1 : 0);
             }
         }
     }
@@ -412,7 +390,7 @@ public class AdaptivePlayer : Player
         if (hand is LuckyHand { IsNatural: false, HasMoved: true } lucky)
         {
             ref var move = ref CollectionsMarshal.GetValueRefOrNullRef(this.moves, lucky.Layout);
-            move.Weight += lucky.Play switch
+            move.Adjust(lucky.Play switch
             {
                 HandPlay.Blackjack => 3,
                 HandPlay.Win => 2,
@@ -420,12 +398,7 @@ public class AdaptivePlayer : Player
                 HandPlay.Loss => -1,
                 HandPlay.Bust => -2,
                 _ => -3
-            };
-
-            if (move.Weight < -12)
-            {
-                move.TryChange();
-            }
+            });
         }
     }
 
