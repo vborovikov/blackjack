@@ -300,7 +300,7 @@ public class AdaptivePlayer : Player
 {
     private sealed class LuckyHand : Hand
     {
-        private DealerPlay dealerPlay;
+        private DealerPlay? dealerPlay;
 
         public LuckyHand(AdaptivePlayer player, int bank) : base(player, bank) { }
 
@@ -317,15 +317,17 @@ public class AdaptivePlayer : Player
             return Join("-", this.cards.Take(2).OrderByDescending(card => card.Order));
         }
 
-        public string Layout => GetPlay(this, this.dealerPlay.Upcard);
+        public bool HasMoved => this.dealerPlay is not null;
+
+        public string Layout => GetPlay(this, this.dealerPlay?.Upcard ?? Card.Joker);
 
         public override HandMove Move(Card upcard, int dealerScore)
         {
             var move = base.Move(upcard, dealerScore);
 
-            if (this.Count >= 2 && upcard.Suit != CardSuit.Joker)
+            if (this.Count == 2)
             {
-                this.dealerPlay = (upcard, dealerScore);
+                this.dealerPlay ??= (upcard, dealerScore);
             }
 
             return move;
@@ -367,7 +369,7 @@ public class AdaptivePlayer : Player
 
     protected override void OnPlayEnded(Hand hand)
     {
-        if (hand is LuckyHand { IsNatural: false } lucky)
+        if (hand is LuckyHand { HasMoved: true } lucky)
         {
             ref var move = ref CollectionsMarshal.GetValueRefOrNullRef(this.moves, lucky.Layout);
             move.Weight += lucky.Play switch
@@ -384,6 +386,7 @@ public class AdaptivePlayer : Player
             {
                 move = move with
                 {
+                    //todo: make sure it's a new move
                     Value = CustomPlayer.GetRandomMove(hand)
                 };
             }

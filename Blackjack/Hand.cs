@@ -205,7 +205,7 @@ public class Hand : HandBase, IReadOnlyCollection<Card>
 
     protected virtual Hand Split(Card card)
     {
-        return new Hand(this.player, card, Pop(Math.Max(250, this.Bank / 3)));
+        return new Hand(this.player, card, Pop(this.Bank / 3));
     }
 
     public void Set(HandPlay play)
