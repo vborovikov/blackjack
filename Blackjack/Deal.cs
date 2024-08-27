@@ -61,20 +61,17 @@ public class Dealer : HandBase
                 if (dealerIsNatural)
                 {
                     hand.Set(HandPlay.Tie);
-                    //todo: return the bets
                     ReturnBet(hand);
                 }
                 else
                 {
                     hand.Set(HandPlay.Blackjack);
-                    //todo: pay 1.5 of their bets
                     PayBet(hand, multiplier: 1.5f);
                 }
             }
             else if (dealerIsNatural)
             {
                 hand.Set(HandPlay.Loss);
-                //todo: collect the bets
                 CollectBet(hand);
             }
         }
@@ -105,13 +102,11 @@ public class Dealer : HandBase
                 if (dealerScore > BlackjackScore)
                 {
                     hand.Set(HandPlay.Win);
-                    //todo: pay bets to all
                     PayBet(hand);
                 }
                 else if (dealerScore == BlackjackScore)
                 {
                     hand.Set(HandPlay.Loss);
-                    //todo: collect bets
                     CollectBet(hand);
                 }
 
@@ -159,13 +154,11 @@ public class Dealer : HandBase
         if (handScore == BlackjackScore)
         {
             hand.Set(HandPlay.Blackjack);
-            //todo: pay bets
             PayBet(hand);
         }
         else if (handScore > BlackjackScore)
         {
             hand.Set(HandPlay.Bust);
-            //todo: collect bets
             CollectBet(hand);
         }
         else if (dealerScore >= StandScore)
@@ -173,13 +166,11 @@ public class Dealer : HandBase
             if (handScore > dealerScore)
             {
                 hand.Set(HandPlay.Win);
-                //todo: pay bets
                 PayBet(hand);
             }
             else if (handScore < dealerScore)
             {
                 hand.Set(HandPlay.Loss);
-                //todo: collect bets
                 CollectBet(hand);
             }
             else
@@ -220,7 +211,6 @@ public class Dealer : HandBase
                 {
                     splitHand = hand.Split();
 
-                    //todo: place new bet
                     PlaceBet(splitHand);
                     hand.Hit(this.shoe.Draw());
                     splitHand.Hit(this.shoe.Draw());
@@ -237,7 +227,6 @@ public class Dealer : HandBase
             {
                 if (hand.Score() is 9 or 10 or 11)
                 {
-                    //todo: place new bet
                     PlaceBet(hand, doubleDown: true);
                     hand.Hit(this.shoe.Draw());
                 }
