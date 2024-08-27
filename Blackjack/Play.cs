@@ -386,10 +386,20 @@ public class AdaptivePlayer : Player
             {
                 move = move with
                 {
-                    //todo: make sure it's a new move
-                    Value = CustomPlayer.GetRandomMove(hand)
+                    Value = GetRandomMoveExcept(hand, move.Value)
                 };
             }
         }
+    }
+
+    private static HandMove GetRandomMoveExcept(Hand hand, HandMove excludedMove)
+    {
+        // make sure it's a new move
+        var move = excludedMove;
+        do
+        {
+            move = CustomPlayer.GetRandomMove(hand);
+        } while (move == excludedMove);
+        return move;
     }
 }
