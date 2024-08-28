@@ -14,10 +14,12 @@
         MinHeight="450"
         MinWidth="800">
     <Window.Resources>
-        <p:MainPresenter x:Key="Main" />
-        <ObjectDataProvider x:Key="BasicPlayer"
-                            ObjectInstance="{x:Static bj:Player.Basic}"
-                            MethodName="ToString" />
+        <ObjectDataProvider x:Key="Main"
+                            ObjectType="{x:Type p:MainPresenter}">
+            <ObjectDataProvider.ConstructorParameters>
+                <StaticResource ResourceKey="LoggerFactory" />
+            </ObjectDataProvider.ConstructorParameters>
+        </ObjectDataProvider>
     </Window.Resources>
     <Window.DataContext>
         <Binding Source="{StaticResource Main}" />

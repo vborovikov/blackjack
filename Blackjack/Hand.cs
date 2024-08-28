@@ -73,8 +73,8 @@ public abstract class HandBase
 
     protected int Pop(int chips) 
     {
-        if (chips < 0 || this.Bank < chips)
-            throw new ArgumentOutOfRangeException(nameof(chips));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(chips);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(chips, this.Bank);
 
         this.Bank -= chips;
         return chips;
@@ -82,8 +82,7 @@ public abstract class HandBase
 
     protected void Push(int chips)
     {
-        if (chips < 0)
-            throw new ArgumentOutOfRangeException(nameof(chips));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(chips);
 
         this.Bank += chips;
     }
