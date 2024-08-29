@@ -36,13 +36,12 @@
 
         private async Task RunAsync()
         {
-            var logger = this.loggerFactory.CreateLogger<Dealer>();
             using (WithStatus("Playing"))
             {
                 await Parallel.ForAsync(0, 1000000, //new ParallelOptions { MaxDegreeOfParallelism = 1 },
                     (playNumber, cancellationToken) =>
                     {
-                        var dealer = new Dealer(logger);
+                        var dealer = new Dealer();
                         dealer.Play(this.player1.Play());
 
                         RaisePropertyChanged(nameof(this.Player1));

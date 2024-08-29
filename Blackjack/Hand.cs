@@ -91,6 +91,7 @@ public abstract class HandBase
 public class Hand : HandBase, IReadOnlyCollection<Card>
 {
     public const int DefaultBank = 1000;
+    private const int DefaultBet = 250;
 
     private sealed class HandLayoutEqualityComparer : IEqualityComparer<Hand>
     {
@@ -204,7 +205,7 @@ public class Hand : HandBase, IReadOnlyCollection<Card>
 
     protected virtual Hand Split(Card card)
     {
-        return new Hand(this.player, card, Pop(this.Bank / 3));
+        return new Hand(this.player, card, Pop(DefaultBet));
     }
 
     public void Set(HandPlay play)
@@ -216,11 +217,7 @@ public class Hand : HandBase, IReadOnlyCollection<Card>
     public Bet MakeBet(bool doubleDown = false)
     {
         //todo: develop a betting strategy
-        var factor = doubleDown ? 2 : 4;
-        if (this.IsSplit)
-            factor /= 2;
-
-        return new(this, Pop(this.Bank / factor));
+        return new(this, Pop(DefaultBet * (doubleDown ? 2 : 1)));
     }
 
     public void ResolveBet(Bet bet)
