@@ -66,7 +66,7 @@ public class HandMoveControl : Control
 
         if (this.moveSymbol != null)
         {
-            this.moveSymbol.Text = newMove is null ? this.EmptyText : Player.MoveToSymbol(newMove.Value).ToString();
+            this.moveSymbol.Text = newMove is null ? this.EmptyText : PlayRule.MoveToSymbol(newMove.Value).ToString();
         }
         if (this.layoutRoot != null)
         {

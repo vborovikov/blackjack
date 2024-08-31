@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static System.String;
 using DealerPlay = (Card Upcard, int Score);
+using PlayRuleMap = System.Collections.Generic.IReadOnlyDictionary<string, HandMove>;
 
 public static class PlayerExtensions
 {
@@ -27,8 +28,64 @@ public static class PlayerExtensions
 
 public readonly record struct PlayRule(string Layout, HandMove Move)
 {
+    private const char CardSeparator = '/';
+    private const char MoveSeparator = ':';
+    private const char RuleSeparator = ',';
+
     public static implicit operator KeyValuePair<string, HandMove>(PlayRule play) => new(play.Layout, play.Move);
     public static implicit operator PlayRule(KeyValuePair<string, HandMove> play) => new(play.Key, play.Value);
+
+    public static string GetLayout(Hand hand, Card upcard)
+    {
+        return Concat(hand, CardSeparator, upcard);
+    }
+
+    public static PlayRuleMap FromString(string strategyMap)
+    {
+        var rules = strategyMap
+            .Split(RuleSeparator)
+            .Where(rule => !IsNullOrWhiteSpace(rule))
+            .Select(rule => rule.Split(MoveSeparator))
+            .ToDictionary(rule => rule[0], rule => SymbolToMove(rule[1][0]), StringComparer.Ordinal);
+        return rules;
+    }
+
+    public static string ToString(PlayRuleMap strategy) =>
+        Join(RuleSeparator, strategy.Select(play => Concat(play.Key, MoveSeparator, MoveToSymbol(play.Value))));
+
+    public static string ToString(IEnumerable<PlayRule> strategy) =>
+        Join(RuleSeparator, strategy.Select(play => Concat(play.Layout, MoveSeparator, MoveToSymbol(play.Move))));
+
+    public static PlayRuleMap Parse(string strategyTable)
+    {
+        return strategyTable
+            .Split('\n')
+            .Select(rules => rules.Split('='))
+            .Select(rule => 
+                (Cards: rule[0].Trim(), Moves: rule[1].Trim().AsEnumerable().Select(m => SymbolToMove(m))))
+            .SelectMany(rule => 
+                rule.Moves.Select((move, i) => 
+                    new KeyValuePair<string, HandMove>(Concat(rule.Cards, CardSeparator, MoveIndexToScoreSymbol(i)), move)))
+            .ToFrozenDictionary(StringComparer.Ordinal);
+    }
+
+    public static char MoveToSymbol(HandMove move) => move switch
+    {
+        HandMove.Double => 'D',
+        HandMove.Hit => 'H',
+        HandMove.Split => 'P',
+        _ => 'S'
+    };
+
+    private static HandMove SymbolToMove(char symbol) => symbol switch
+    {
+        'D' => HandMove.Double,
+        'H' => HandMove.Hit,
+        'P' => HandMove.Split,
+        _ => HandMove.Stand
+    };
+
+    private static char MoveIndexToScoreSymbol(int i) => Card.RankToSymbol(Dealer.Upcards[i].Rank);
 }
 
 public abstract class Player : IEnumerable<Hand>
@@ -37,10 +94,6 @@ public abstract class Player : IEnumerable<Hand>
 
     public static readonly Player Basic = new BasicPlayer();
     public static readonly Player None = new Bystander();
-
-    protected const char CardSeparator = '/';
-    protected const char MoveSeparator = ':';
-    protected const char RuleSeparator = ',';
 
     private readonly List<Hand> hands;
 
@@ -51,33 +104,11 @@ public abstract class Player : IEnumerable<Hand>
 
     public abstract string Name { get; }
 
-    public static char MoveToSymbol(HandMove move) => move switch
-    {
-        HandMove.Double => 'D',
-        HandMove.Hit => 'H',
-        HandMove.Split => 'P',
-        _ => 'S'
-    };
+    public IEnumerator<Hand> GetEnumerator() => ((IEnumerable<Hand>)this.hands).GetEnumerator();
 
-    public static IReadOnlyDictionary<string, HandMove> FromString(string strategy)
-    {
-        var rules = strategy
-            .Split(RuleSeparator)
-            .Where(rule => !IsNullOrWhiteSpace(rule))
-            .Select(rule => rule.Split(MoveSeparator))
-            .ToDictionary(rule => rule[0], rule => SymbolToMove(rule[1][0]), StringComparer.Ordinal);
-        return rules;
-    }
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)this.hands).GetEnumerator();
 
-    public static string GetLayout(Hand hand, Card upcard)
-    {
-        return Concat(hand, CardSeparator, upcard);
-    }
-
-    public virtual Hand BeginPlay(int bank = Hand.DefaultBank)
-    {
-        return new Hand(this, bank);
-    }
+    public virtual Hand BeginPlay(int bank = Hand.DefaultBank) => new(this, bank);
 
     public HandMove Move(Hand hand, Card upcard, int dealerScore)
     {
@@ -92,40 +123,16 @@ public abstract class Player : IEnumerable<Hand>
         OnPlayEnded(hand);
     }
 
-    public IEnumerator<Hand> GetEnumerator() => ((IEnumerable<Hand>)this.hands).GetEnumerator();
+    protected virtual void OnHandMoved(Hand hand, Card upcard, int dealerScore, HandMove move) { }
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)this.hands).GetEnumerator();
-
-    protected static HandMove SymbolToMove(char symbol) => symbol switch
-    {
-        'D' => HandMove.Double,
-        'H' => HandMove.Hit,
-        'P' => HandMove.Split,
-        _ => HandMove.Stand
-    };
-
-    protected static char MoveIndexToScoreSymbol(int i) => Card.RankToSymbol(Dealer.Upcards[i].Rank);
-
-    protected static string ToString(IEnumerable<PlayRule> strategy) =>
-        Join(RuleSeparator, strategy.Select(play => Concat(play.Layout, MoveSeparator, MoveToSymbol(play.Move))));
-
-    protected static string ToString(IEnumerable<KeyValuePair<string, HandMove>> strategy) =>
-        Join(RuleSeparator, strategy.Select(play => Concat(play.Key, MoveSeparator, MoveToSymbol(play.Value))));
-
-    protected virtual void OnPlayEnded(Hand hand)
-    {
-    }
+    protected virtual void OnPlayEnded(Hand hand) { }
 
     protected abstract HandMove MoveOverride(Hand hand, Card upcard, int dealerScore);
-
-    protected virtual void OnHandMoved(Hand hand, Card upcard, int dealerScore, HandMove move)
-    {
-    }
 }
 
 file sealed class BasicPlayer : Player
 {
-    public static readonly FrozenDictionary<string, HandMove> Strategy;
+    public static readonly PlayRuleMap Strategy;
 
     private const string BasicStrategyTable =
         //  23456789TA
@@ -168,35 +175,16 @@ file sealed class BasicPlayer : Player
 
     static BasicPlayer()
     {
-        var basicStrategyMap = BasicStrategyTable
-            .Split('\n')
-            .Select(rules => rules.Split('='))
-            .Select(rule =>
-            new
-            {
-                Cards = rule[0].Trim(),
-                Moves = rule[1].Trim().AsEnumerable().Select(m => SymbolToMove(m))
-            })
-            .SelectMany
-            (
-                rule => rule.Moves.Select((m, i) =>
-                (
-                    Layout: Concat(rule.Cards, CardSeparator, MoveIndexToScoreSymbol(i)),
-                    Move: m
-                ))
-            )
-            .ToDictionary(StringComparer.Ordinal);
-
-        Strategy = basicStrategyMap.ToFrozenDictionary(StringComparer.Ordinal);
+        Strategy = PlayRule.Parse(BasicStrategyTable);
     }
 
     public override string Name => "Basic";
 
-    public override string ToString() => ToString(Strategy);
+    public override string ToString() => PlayRule.ToString(Strategy);
 
     protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
-        return Strategy.GetValueOrDefault(GetLayout(hand, upcard));
+        return Strategy.GetValueOrDefault(PlayRule.GetLayout(hand, upcard));
     }
 }
 
@@ -213,7 +201,7 @@ file sealed class Bystander : Player
 public class CustomPlayer : Player
 {
     private readonly string name;
-    private readonly FrozenDictionary<string, HandMove> ruleMap;
+    private readonly PlayRuleMap ruleMap;
 
     private CustomPlayer() { }
 
@@ -227,17 +215,17 @@ public class CustomPlayer : Player
 
     protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
-        return this.ruleMap.GetValueOrDefault(GetLayout(hand, upcard));
+        return this.ruleMap.GetValueOrDefault(PlayRule.GetLayout(hand, upcard));
     }
 
-    public override string ToString() => ToString(this.ruleMap);
+    public override string ToString() => PlayRule.ToString(this.ruleMap);
 
     public static CustomPlayer CreateRandom() => new("Random", MakeRandomRules());
 
     public static CustomPlayer CreateHitman() => new("Hitman",
         from hand in Hand.Deals
         from upcard in Dealer.Upcards
-        select new PlayRule(GetLayout(hand, upcard), HandMove.Hit));
+        select new PlayRule(PlayRule.GetLayout(hand, upcard), HandMove.Hit));
 
     public static IEnumerable<CustomPlayer> MakeChildren(CustomPlayer player1, CustomPlayer player2)
     {
@@ -291,7 +279,7 @@ public class CustomPlayer : Player
                              from upcard in Dealer.Upcards
                              select (hand, upcard))
         {
-            yield return new(GetLayout(play.hand, play.upcard), GetRandomMove(play.hand));
+            yield return new(PlayRule.GetLayout(play.hand, play.upcard), GetRandomMove(play.hand));
         }
     }
 
@@ -327,7 +315,7 @@ public class AdaptivePlayer : Player
 
         public bool HasMoved => this.dealerPlay is not null;
 
-        public string Layout => GetLayout(this, this.dealerPlay?.Upcard ?? Card.Joker);
+        public string Layout => PlayRule.GetLayout(this, this.dealerPlay?.Upcard ?? Card.Joker);
 
         public override HandMove Move(Card upcard, int dealerScore)
         {
@@ -373,13 +361,13 @@ public class AdaptivePlayer : Player
     {
         this.moves = (from hand in Hand.Deals
                       from upcard in Dealer.Upcards
-                      select (Layout: GetLayout(hand, upcard), Hand: hand))
+                      select (Layout: PlayRule.GetLayout(hand, upcard), Hand: hand))
                     .ToDictionary(e => e.Layout, e => new LuckyHandMove(e.Hand), StringComparer.Ordinal);
     }
 
     public override string Name => "Adaptive";
 
-    public override string ToString() => ToString(this.moves.Select(m => new PlayRule(m.Key, m.Value.Value)));
+    public override string ToString() => PlayRule.ToString(this.moves.Select(m => new PlayRule(m.Key, m.Value.Value)));
 
     public override Hand BeginPlay(int bank = Hand.DefaultBank)
     {
@@ -388,7 +376,7 @@ public class AdaptivePlayer : Player
 
     protected override HandMove MoveOverride(Hand hand, Card upcard, int dealerScore)
     {
-        return this.moves.GetValueOrDefault(GetLayout(hand, upcard))?.Value ?? HandMove.Stand;
+        return this.moves.GetValueOrDefault(PlayRule.GetLayout(hand, upcard))?.Value ?? HandMove.Stand;
     }
 
     protected override void OnPlayEnded(Hand hand)

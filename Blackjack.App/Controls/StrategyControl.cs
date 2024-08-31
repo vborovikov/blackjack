@@ -106,7 +106,7 @@ public class StrategyControl : HeaderedControl
                 Grid.SetColumn(moveControl, i + 1);
                 Grid.SetRow(moveControl, row);
 
-                this.moveControls[Player.GetLayout(deal, Dealer.Upcards[i])] = moveControl;
+                this.moveControls[PlayRule.GetLayout(deal, Dealer.Upcards[i])] = moveControl;
                 grid.Children.Add(moveControl);
             }
         }
@@ -121,7 +121,7 @@ public class StrategyControl : HeaderedControl
 
         if (e.NewValue is string movesStr && this.moveControls.Count > 0)
         {
-            var moves = Player.FromString(movesStr);
+            var moves = PlayRule.FromString(movesStr);
             foreach (var move in moves)
             {
                 if (!this.moveControls.TryGetValue(move.Key, out var moveControl))
