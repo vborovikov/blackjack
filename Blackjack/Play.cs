@@ -6,7 +6,6 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static System.String;
 using DealerPlay = (Card Upcard, int Score);
@@ -355,14 +354,14 @@ public class AdaptivePlayer : Player
         }
     }
 
-    private readonly Dictionary<string, LuckyHandMove> moves;
+    private readonly IReadOnlyDictionary<string, LuckyHandMove> moves;
 
     public AdaptivePlayer()
     {
         this.moves = (from hand in Hand.Deals
                       from upcard in Dealer.Upcards
                       select (Layout: PlayRule.GetLayout(hand, upcard), Hand: hand))
-                    .ToDictionary(e => e.Layout, e => new LuckyHandMove(e.Hand), StringComparer.Ordinal);
+                    .ToFrozenDictionary(e => e.Layout, e => new LuckyHandMove(e.Hand), StringComparer.Ordinal);
     }
 
     public override string Name => "Adaptive";
@@ -383,7 +382,7 @@ public class AdaptivePlayer : Player
     {
         if (hand is LuckyHand { IsNatural: false, HasMoved: true } lucky)
         {
-            ref var move = ref CollectionsMarshal.GetValueRefOrNullRef(this.moves, lucky.Layout);
+            var move = this.moves.GetValueOrDefault(lucky.Layout);
             move.Adjust(lucky.Play switch
             {
                 HandPlay.Blackjack => 3,
