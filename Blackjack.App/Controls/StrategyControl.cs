@@ -106,7 +106,7 @@ public class StrategyControl : HeaderedControl
                 Grid.SetColumn(moveControl, i + 1);
                 Grid.SetRow(moveControl, row);
 
-                this.moveControls[Player.GetPlay(deal, Dealer.Upcards[i])] = moveControl;
+                this.moveControls[Player.GetLayout(deal, Dealer.Upcards[i])] = moveControl;
                 grid.Children.Add(moveControl);
             }
         }
