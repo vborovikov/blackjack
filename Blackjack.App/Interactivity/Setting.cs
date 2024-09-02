@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Markup;
 
 public class Setting : Binding
 {
@@ -54,6 +56,23 @@ public class Setting : Binding
             }
         }
     }
+}
+
+public sealed class NumberConverter : MarkupExtension, IValueConverter
+{
+    public static readonly NumberConverter Instance = new();
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return System.Convert.ChangeType(value ?? 0d, targetType, culture);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value;
+    }
+
+    public override object ProvideValue(IServiceProvider serviceProvider) => Instance;
 }
 
 static class AppData
