@@ -59,14 +59,21 @@
             </StatusBarItem>
         </StatusBar>
 
-        <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Horizontal">
-                <ctrl:StrategyControl Rules="{Binding Player1}"
-                                      Header="{Binding Player1.Name}" />
-                <ctrl:StrategyControl Rules="{Binding Player2}"
-                                      Header="{Binding Player2.Name}" />
-            </StackPanel>
-        </ScrollViewer>
+        <TabControl SelectedIndex="{ai:Setting MainWindowTab, TargetNullValue=0, Converter={ai:NumberConverter}}">
+            <TabItem Header="Strategy">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel Orientation="Horizontal">
+                        <ctrl:StrategyControl Rules="{Binding Player1}"
+                                              Header="{Binding Player1.Name}" />
+                        <ctrl:StrategyControl Rules="{Binding Player2}"
+                                              Header="{Binding Player2.Name}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Table">
+                <ctrl:CardControl Value="{x:Null}" />
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>
