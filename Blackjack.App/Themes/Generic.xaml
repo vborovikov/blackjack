@@ -134,10 +134,38 @@
                             SnapsToDevicePixels="True">
                         <Grid x:Name="LayoutRoot"
                               Margin="{TemplateBinding Padding}">
-                            <TextBlock x:Name="CardSymbol"
-                                       TextAlignment="Center"
-                                       Foreground="{TemplateBinding Foreground}"
-                                       Text="{TemplateBinding Value}" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel x:Name="CardSymbol"
+                                        Orientation="Vertical"
+                                        VerticalAlignment="Top">
+                                <TextBlock x:Name="CardRank"
+                                           Text="{TemplateBinding Value}" />
+                            </StackPanel>
+
+                            <Rectangle Height="{Binding ActualHeight, ElementName=CardSymbol}"
+                                       Width="{Binding ActualWidth, ElementName=CardSymbol}"
+                                       VerticalAlignment="Bottom"
+                                       Grid.Column="2">
+                                <Rectangle.Fill>
+                                    <!-- Creates the reflection. -->
+                                    <VisualBrush Stretch="None"
+                                                 Visual="{Binding ElementName=CardSymbol}">
+                                        <VisualBrush.RelativeTransform>
+                                            <!-- Flip the reflection. -->
+                                            <TransformGroup>
+                                                <ScaleTransform ScaleX="1"
+                                                                ScaleY="-1" />
+                                                <TranslateTransform  Y="1" />
+                                            </TransformGroup>
+                                        </VisualBrush.RelativeTransform>
+                                    </VisualBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
                         </Grid>
                     </Border>
                 </ControlTemplate>

@@ -72,7 +72,7 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Table">
-                <ctrl:CardControl Value="{x:Null}" />
+                <ctrl:CardControl Value="QS" />
             </TabItem>
         </TabControl>
     </DockPanel>
