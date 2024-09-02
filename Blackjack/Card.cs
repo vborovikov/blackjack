@@ -79,6 +79,8 @@ public readonly struct Card : IEquatable<Card>
         _ => (int)this.Rank
     };
 
+    public char Symbol => RankToSymbol(this.Rank);
+
     public static bool operator ==(Card left, Card right) => left.Equals(right);
 
     public static bool operator !=(Card left, Card right) => !(left == right);
