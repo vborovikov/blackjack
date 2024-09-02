@@ -140,6 +140,12 @@ public readonly struct Card : IEquatable<Card>, ISpanFormattable, ISpanParsable<
         return false;
     }
 
+    public static Card Parse(string s) =>
+        Parse(s.AsSpan(), null);
+
+    public static bool TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out Card result) =>
+        TryParse(s.AsSpan(), null, out result);
+
     public static Card Parse(string s, IFormatProvider? provider) =>
         Parse(s.AsSpan(), provider);
 
@@ -168,7 +174,7 @@ public readonly struct Card : IEquatable<Card>, ISpanFormattable, ISpanParsable<
             return false;
         }
 
-        result = new(SymbolToSuit(s[0]), SymbolToRank(s[1]));
+        result = new(SymbolToSuit(s[1]), SymbolToRank(s[0]));
         return true;
     }
 
