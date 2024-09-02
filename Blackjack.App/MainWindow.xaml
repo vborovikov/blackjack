@@ -59,7 +59,7 @@
             </StatusBarItem>
         </StatusBar>
 
-        <TabControl SelectedIndex="{ai:Setting MainWindowTab, TargetNullValue=0, Converter={ai:NumberConverter}}">
+        <TabControl SelectedIndex="{ai:Setting MainWindowTab, TargetNullValue=0, Converter={x:Static ai:NumberConverter.Instance}}">
             <TabItem Header="Strategy">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">

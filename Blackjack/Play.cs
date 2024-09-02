@@ -36,7 +36,7 @@ public readonly record struct PlayRule(string Layout, HandMove Move)
 
     public static string GetLayout(Hand hand, Card upcard)
     {
-        return Concat(hand, CardSeparator, upcard);
+        return Concat(hand, CardSeparator, upcard.ScoreSymbol);
     }
 
     public static PlayRuleMap FromString(string strategyMap)
@@ -84,7 +84,7 @@ public readonly record struct PlayRule(string Layout, HandMove Move)
         _ => HandMove.Stand
     };
 
-    private static char MoveIndexToScoreSymbol(int i) => Card.RankToSymbol(Dealer.Upcards[i].Rank);
+    private static char MoveIndexToScoreSymbol(int i) => Dealer.Upcards[i].ScoreSymbol;
 }
 
 public abstract class Player : IEnumerable<Hand>
@@ -202,7 +202,7 @@ public class CustomPlayer : Player
     private readonly string name;
     private readonly PlayRuleMap ruleMap;
 
-    private CustomPlayer() { }
+    private CustomPlayer() : this(string.Empty, []) { }
 
     private protected CustomPlayer(string name, IEnumerable<PlayRule> rules)
     {
@@ -309,7 +309,7 @@ public class AdaptivePlayer : Player
                 return (this.FirstCard.Score + this.SecondCard.Score).ToString(CultureInfo.InvariantCulture);
             }
 
-            return Join("-", this.cards.Take(2).OrderByDescending(card => card.Order));
+            return Join('-', this.cards.Take(2).OrderByDescending(card => card.Order).Select(card => card.ScoreSymbol));
         }
 
         public bool HasMoved => this.dealerPlay is not null;
@@ -383,7 +383,7 @@ public class AdaptivePlayer : Player
         if (hand is LuckyHand { IsNatural: false, HasMoved: true } lucky)
         {
             var move = this.moves.GetValueOrDefault(lucky.Layout);
-            move.Adjust(lucky.Play switch
+            move?.Adjust(lucky.Play switch
             {
                 HandPlay.Blackjack => 3,
                 HandPlay.Win => 2,

@@ -23,8 +23,8 @@ public class HandMoveControl : Control
         DependencyProperty.Register(nameof(EmptyText), typeof(string),
             typeof(HandMoveControl), new PropertyMetadata(String.Empty, (d, e) => ((HandMoveControl)d).OnEmptyTextChanged(e)));
 
-    private Panel layoutRoot;
-    private TextBlock moveSymbol;
+    private Panel? layoutRoot;
+    private TextBlock? moveSymbol;
 
     static HandMoveControl()
     {

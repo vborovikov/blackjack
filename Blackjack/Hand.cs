@@ -52,7 +52,7 @@ public abstract class HandBase
     protected bool HasAce => this.cards.Any(card => card.Rank == CardRank.Ace);
 
     public override string ToString() =>
-        Join("-", this.cards.OrderByDescending(card => card.Order));
+        Join('-', this.cards.OrderByDescending(card => card.Order).Select(card => card.ScoreSymbol));
 
     public int Score()
     {
@@ -95,7 +95,7 @@ public class Hand : HandBase, IReadOnlyCollection<Card>
 
     private sealed class HandLayoutEqualityComparer : IEqualityComparer<Hand>
     {
-        public bool Equals(Hand x, Hand y)
+        public bool Equals(Hand? x, Hand? y)
         {
             if (ReferenceEquals(x, y))
                 return true;

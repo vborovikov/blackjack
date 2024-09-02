@@ -85,7 +85,7 @@ public class StrategyControl : HeaderedControl
         {
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = length });
 
-            var upcardCtrl = new HandMoveControl { EmptyText = Dealer.Upcards[i].ToString(), Background = Brushes.White };
+            var upcardCtrl = new HandMoveControl { EmptyText = Dealer.Upcards[i].ScoreSymbol.ToString(), Background = Brushes.White };
             Grid.SetColumn(upcardCtrl, i + 1);
             grid.Children.Add(upcardCtrl);
         }
