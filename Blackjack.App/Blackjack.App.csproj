@@ -31,7 +31,7 @@
   <ItemGroup>
     <Content Include="Resources\app.ico" />
     <Resource Include="Resources\*.png" />
-    <Resource Include="Resources\**\*.png" />
+    <Resource Include="Resources\Decks\**\*.png" />
   </ItemGroup>
 
 </Project>

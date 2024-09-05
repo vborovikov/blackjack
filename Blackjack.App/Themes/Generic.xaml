@@ -114,42 +114,41 @@
     </Style>
 
     <Style TargetType="{x:Type local:CardControl}">
-        <Setter Property="Background"
-                Value="WhiteSmoke" />
+        <!--<Setter Property="Background"
+                Value="WhiteSmoke" />-->
         <Setter Property="BorderBrush"
                 Value="DarkSlateGray" />
         <Setter Property="BorderThickness"
-                Value="3" />
+                Value="1" />
+        <Setter Property="CornerRadius"
+                Value="6" />
         <Setter Property="Padding"
-                Value="3" />
+                Value="0" />
         <Setter Property="Width"
-                Value="170" />
+                Value="140" />
         <Setter Property="Height"
-                Value="250" />
+                Value="190" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="UseLayoutRounding"
+                Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:CardControl}">
-                    <ControlTemplate.Resources>
-                        <GeometryDrawing x:Key="Diamonds"
-                                         Brush="#e6180a">
-                            <GeometryDrawing.Geometry>
-                                <PathGeometry Figures="M 49.026,99.8581L 49.0307,99.8555L 49.0248,99.8528C 39.4492,94.5436 31.7793,78.4531 31.5325,77.9362L 31.5325,77.9251L 31.5325,77.9299L 31.528,77.9251L 31.528,77.9362C 31.2832,78.4531 23.612,94.5436 14.0384,99.8528L 14.0319,99.8528L 14.0339,99.8581L 14.0319,99.86L 14.0384,99.86C 23.612,105.17 31.2832,121.263 31.528,121.777L 31.528,121.791L 31.5325,121.783L 31.5325,121.791L 31.5325,121.777C 31.7793,121.263 39.4492,105.17 49.0248,99.86L 49.0307,99.86L 49.026,99.8581 Z "
-                                              FillRule="Nonzero" />
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                    </ControlTemplate.Resources>
-                    <local:CardPattern Background="{TemplateBinding Background}"
-                                       Foreground="{TemplateBinding Foreground}"
-                                       BorderBrush="{TemplateBinding BorderBrush}"
-                                       BorderThickness="{TemplateBinding BorderThickness}"
-                                       CornerRadius="{TemplateBinding CornerRadius}"
-                                       Rank="{TemplateBinding Rank}"
-                                       SuitDrawing="{StaticResource Diamonds}"
-                                       SnapsToDevicePixels="True">
-                        <Grid x:Name="LayoutRoot"
-                              Margin="{TemplateBinding Padding}">
-                        </Grid>
-                    </local:CardPattern>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <!--<local:Bitmap>
+                            <local:Bitmap.Source>
+                                <Binding Path="Value"
+                                         RelativeSource="{RelativeSource TemplatedParent}"
+                                         StringFormat="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/{0}.png"
+                                         TargetNullValue="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/00.png"
+                                         FallbackValue="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/00.png" />
+                            </local:Bitmap.Source>
+                        </local:Bitmap>-->
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -1,10 +1,12 @@
 namespace Blackjack.App.Controls;
 
+using System.Collections.Frozen;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 [TemplatePart(Name = TemplateParts.LayoutRoot, Type = typeof(Panel))]
 public class CardControl : Control
@@ -14,9 +16,29 @@ public class CardControl : Control
         public const string LayoutRoot = "LayoutRoot";
     }
 
+    private static readonly string DefaultBackgroundKey = Card.Back.ToString();
+    private static readonly FrozenDictionary<string, Brush> backgrounds;
+
     static CardControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(CardControl), new FrameworkPropertyMetadata(typeof(CardControl)));
+
+        backgrounds = Card.StandardDeck
+            .Select(card => card.ToString())
+            .Concat([DefaultBackgroundKey])
+            .ToFrozenDictionary(card => card, card =>
+            {
+                var image = new BitmapImage(
+                    new Uri($"pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/{card}.png"));
+
+                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+                RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
+
+                var brush = new ImageBrush(image);
+                brush.Freeze();
+
+                return (Brush)brush;
+            }, StringComparer.Ordinal);
     }
 
     public static readonly DependencyProperty CornerRadiusProperty =
@@ -36,7 +58,7 @@ public class CardControl : Control
 
     internal static readonly DependencyPropertyKey SuitPropertyKey =
         DependencyProperty.RegisterReadOnly(nameof(Suit), typeof(CardSuit), typeof(CardControl),
-            new PropertyMetadata(CardSuit.Joker));
+            new PropertyMetadata(CardSuit.Unknown));
 
     public static readonly DependencyProperty SuitProperty = SuitPropertyKey.DependencyProperty;
 
@@ -66,6 +88,12 @@ public class CardControl : Control
             SetValue(SuitPropertyKey, card.Suit);
             SetValue(RankPropertyKey, card.Rank);
         }
+
+        if (!backgrounds.TryGetValue(e.NewValue as string ?? DefaultBackgroundKey, out var brush))
+        {
+            brush = backgrounds[DefaultBackgroundKey];
+        }
+        SetCurrentValue(BackgroundProperty, brush);
     }
 }
 
