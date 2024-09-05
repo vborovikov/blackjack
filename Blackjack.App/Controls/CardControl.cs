@@ -89,7 +89,18 @@ public class CardControl : Control
             SetValue(RankPropertyKey, card.Rank);
         }
 
-        if (!backgrounds.TryGetValue(e.NewValue as string ?? DefaultBackgroundKey, out var brush))
+        ChangeBackground(e.NewValue as string);
+    }
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        ChangeBackground(this.Value);
+    }
+
+    private void ChangeBackground(string? value)
+    {
+        if (!backgrounds.TryGetValue(value ?? DefaultBackgroundKey, out var brush))
         {
             brush = backgrounds[DefaultBackgroundKey];
         }
