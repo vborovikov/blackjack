@@ -47,7 +47,7 @@ public abstract class HandBase
 
     public int Bank { get; private set; }
 
-    public Card FirstCard => this.cards.Count > 0 ? this.cards[0] : Card.Joker;
+    public Card FirstCard => this.cards.Count > 0 ? this.cards[0] : Card.Back;
     public bool IsNatural => this.cards.Count == 2 && Score() == BlackjackScore;
     protected bool HasAce => this.cards.Any(card => card.Rank == CardRank.Ace);
 
@@ -163,7 +163,7 @@ public class Hand : HandBase, IReadOnlyCollection<Card>
 
     public int Count => this.cards.Count;
 
-    public Card SecondCard => this.cards.Count > 1 ? this.cards[1] : Card.Joker;
+    public Card SecondCard => this.cards.Count > 1 ? this.cards[1] : Card.Back;
 
     public bool IsSplit { get; }
 

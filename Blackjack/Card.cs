@@ -8,11 +8,12 @@ using System.Diagnostics.CodeAnalysis;
 /// </summary>
 public enum CardSuit
 {
-    Joker,
+    Unknown,
     Hearts,
     Diamonds,
     Clubs,
     Spades,
+    Joker
 }
 
 /// <summary>
@@ -43,7 +44,9 @@ public readonly struct Card : IEquatable<Card>, ISpanFormattable, ISpanParsable<
 {
     public const int MinScore = 2;
     public const int MaxScore = 11;
-    public static readonly Card Joker = new();
+    public static readonly Card Back = new();
+    public static readonly Card BlackJocker = new(CardSuit.Joker, CardRank.None);
+    public static readonly Card RedJocker = new(CardSuit.Joker, CardRank.Ace);
 
     public static readonly Card[] StandardDeck;
 
@@ -194,7 +197,8 @@ public readonly struct Card : IEquatable<Card>, ISpanFormattable, ISpanParsable<
         'D' or 'd' => CardSuit.Diamonds,
         'C' or 'c' => CardSuit.Clubs,
         'S' or 's' => CardSuit.Spades,
-        _ => CardSuit.Joker
+        'X' or 'x' => CardSuit.Joker,
+        _ => CardSuit.Unknown
     };
 
     private static char RankToSymbol(CardRank rank) => rank switch
@@ -213,6 +217,7 @@ public readonly struct Card : IEquatable<Card>, ISpanFormattable, ISpanParsable<
         CardSuit.Diamonds => 'D',
         CardSuit.Clubs => 'C',
         CardSuit.Spades => 'S',
-        _ => 'X'
+        CardSuit.Joker => 'X',
+        _ => '0'
     };
 }

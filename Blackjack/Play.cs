@@ -314,7 +314,7 @@ public class AdaptivePlayer : Player
 
         public bool HasMoved => this.dealerPlay is not null;
 
-        public string Layout => PlayRule.GetLayout(this, this.dealerPlay?.Upcard ?? Card.Joker);
+        public string Layout => PlayRule.GetLayout(this, this.dealerPlay?.Upcard ?? Card.Back);
 
         public override HandMove Move(Card upcard, int dealerScore)
         {

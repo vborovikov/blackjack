@@ -7,14 +7,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 public class CardTests
 {
     [TestMethod]
-    public void TryFormat_Default_Joker()
+    public void TryFormat_Default_Back()
     {
         Span<char> span = stackalloc char[2];
         Card card = default;
 
         Assert.IsTrue(card.TryFormat(span, out var charsWritten, [], null));
         Assert.AreEqual(2, charsWritten);
-        Assert.AreEqual("0X", span[..charsWritten].ToString());
+        Assert.AreEqual("00", span[..charsWritten].ToString());
     }
 
     [DataRow("QS", CardRank.Queen, CardSuit.Spades)]

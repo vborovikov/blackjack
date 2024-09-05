@@ -19,16 +19,16 @@ public class Dealer : HandBase
     // Upcards are for information only, not real cards
     public static readonly Card[] Upcards =
     [
-        new(CardSuit.Joker, CardRank.Two),
-        new(CardSuit.Joker, CardRank.Three),
-        new(CardSuit.Joker, CardRank.Four),
-        new(CardSuit.Joker, CardRank.Five),
-        new(CardSuit.Joker, CardRank.Six),
-        new(CardSuit.Joker, CardRank.Seven),
-        new(CardSuit.Joker, CardRank.Eight),
-        new(CardSuit.Joker, CardRank.Nine),
-        new(CardSuit.Joker, CardRank.Ten),
-        new(CardSuit.Joker, CardRank.Ace),
+        new(CardSuit.Unknown, CardRank.Two),
+        new(CardSuit.Unknown, CardRank.Three),
+        new(CardSuit.Unknown, CardRank.Four),
+        new(CardSuit.Unknown, CardRank.Five),
+        new(CardSuit.Unknown, CardRank.Six),
+        new(CardSuit.Unknown, CardRank.Seven),
+        new(CardSuit.Unknown, CardRank.Eight),
+        new(CardSuit.Unknown, CardRank.Nine),
+        new(CardSuit.Unknown, CardRank.Ten),
+        new(CardSuit.Unknown, CardRank.Ace),
     ];
 
     private readonly EventId gameId;
