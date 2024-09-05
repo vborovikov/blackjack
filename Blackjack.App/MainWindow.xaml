@@ -75,12 +75,21 @@
                 <Border Background="PapayaWhip"
                         BorderThickness="4"
                         Margin="{StaticResource uxDoubleMargin}">
-                    <StackPanel Orientation="Horizontal">
-                        <ctrl:CardControl Value=""
-                                          Margin="{StaticResource uxDoubleMargin}" />
-                        <ctrl:CardControl Value="QS"
-                                          Margin="{StaticResource uxDoubleMargin}" />
-                    </StackPanel>
+                    <ctrl:CardStackPanel Orientation="Horizontal"
+                                         OffsetMode="EveryCard"
+                                         FaceDownOffset="30"
+                                         FaceUpOffset="45"
+                                         Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="{x:Null}" />
+                        <ctrl:CardControl Value="" />
+                        <ctrl:CardControl Value="0X" />
+                        <ctrl:CardControl Value="AX" />
+                        <ctrl:CardControl Value="QS" />
+                        <ctrl:CardControl Value="5H" />
+                        <ctrl:CardControl Value="JD" />
+                        <ctrl:CardControl Value="7C" />
+                        <ctrl:CardControl Value="KH" />
+                    </ctrl:CardStackPanel>
                 </Border>
             </TabItem>
         </TabControl>
