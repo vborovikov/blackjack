@@ -148,6 +148,11 @@
                                          FallbackValue="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/00.png" />
                             </local:Bitmap.Source>
                         </local:Bitmap>-->
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="5"
+                                              ShadowDepth="3"
+                                              Opacity="0.5" />
+                        </Border.Effect>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
