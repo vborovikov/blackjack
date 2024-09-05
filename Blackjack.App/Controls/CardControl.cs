@@ -1,6 +1,7 @@
 namespace Blackjack.App.Controls;
 
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -70,7 +71,9 @@ public class CardControl : Control
 
 public sealed class CardPattern : Decorator
 {
-    private static readonly Typeface typeface = new("Palatino Linotype");
+    private const double ScorePadding = 3.0;
+    private static readonly Typeface typeface = new(new(/*"Palatino Linotype"*/"Georgia"), 
+        FontStyles.Normal, FontWeights.Normal, FontStretches.UltraCondensed);
 
     public static readonly DependencyProperty BackgroundProperty =
         DependencyProperty.Register(nameof(Background), typeof(Brush), typeof(CardPattern),
@@ -171,42 +174,113 @@ public sealed class CardPattern : Decorator
         var borderBrush = this.BorderBrush;
         var cornerRadius = this.CornerRadius;
         var suitDrawing = this.SuitDrawing;
+        var rank = this.Rank;
 
+        if (background is not null)
+        {
+            // fill the background for the card pattern
+            var rect = bounds;
+            if (borderBrush is not null)
+            {
+                var halfThickness = borderThickness.Left * 0.5;
+                rect = new(new Point(bounds.Left + halfThickness, bounds.Top + halfThickness),
+                    new Point(bounds.Width - halfThickness, bounds.Height - halfThickness));
+            }
+            drawingContext.DrawRoundedRectangle(background, null, rect, cornerRadius.TopLeft, cornerRadius.TopLeft);
+        }
         if (borderBrush is not null)
         {
+            // draw outer border
             DrawBorder(drawingContext, borderBrush, borderThickness, cornerRadius, ref bounds);
+        }
+        if (foreground is not null)
+        {
+            DrawScore(drawingContext, foreground, rank, suitDrawing, ref bounds);
+            if (suitDrawing is not null)
+            {
+                // draw the pattern for a non-face card
+                DrawPattern(drawingContext, foreground, rank, suitDrawing, ref bounds);
+            }
         }
     }
 
-    private void DrawBorder(DrawingContext drawingContext, Brush borderBrush, in Thickness borderThickness, in CornerRadius cornerRadius, ref Rect bounds)
+    private void DrawScore(DrawingContext drawingContext, Brush brush, CardRank rank, Drawing? suit, ref Rect bounds)
+    {
+        var textHeight = ScorePadding;
+        if (GetRankText(rank) is string { Length: > 0 } str)
+        {
+            var text = new FormattedText(
+                    str, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                    typeface, bounds.Height * 0.07, brush, 1.25)
+            {
+                TextAlignment = TextAlignment.Left,
+                Trimming = TextTrimming.None,
+                MaxTextWidth = bounds.Width / 2,
+                MaxTextHeight = bounds.Height / 2,
+            };
+
+            // top left corner
+            var textOrigin = new Point(bounds.Left + ScorePadding, bounds.Top);
+            drawingContext.DrawText(text, textOrigin);
+
+            // bottom right corner
+            drawingContext.PushTransform(new RotateTransform(180.0, base.ActualWidth / 2, base.ActualHeight / 2));
+            drawingContext.DrawText(text, textOrigin);
+            drawingContext.Pop();
+
+            textHeight = text.Height;
+        }
+
+        if (suit is not null)
+        {
+            //todo: offset and scale transforms
+            drawingContext.DrawDrawing(suit);
+        }
+    }
+
+    private static string GetRankText(CardRank rank) => rank switch
+    {
+        CardRank.None => "JOKER",
+        CardRank.Ace => "A",
+        CardRank.Jack => "J",
+        CardRank.Queen => "Q",
+        CardRank.King => "K",
+        _ => new((char)(0x30 + (((int)rank) % 10)), 1)
+    };
+
+    private void DrawPattern(DrawingContext drawingContext, Brush brush, CardRank rank, Drawing suit, ref Rect bounds)
+    {
+    }
+
+    private void DrawBorder(DrawingContext drawingContext, Brush brush, in Thickness thickness, in CornerRadius cornerRadius, ref Rect bounds)
     {
         // only uniform thickness and corner radius are supported
 
-        var size = CollapseThickness(borderThickness);
+        var size = CollapseThickness(thickness);
         if (size.Width > 0.0 || size.Height > 0.0)
         {
             if (size.Width > bounds.Width || size.Height > bounds.Height)
             {
                 if (bounds.Width > 0.0 && bounds.Height > 0.0)
                 {
-                    drawingContext.DrawRoundedRectangle(borderBrush, null, bounds, cornerRadius.TopLeft, cornerRadius.TopLeft);
+                    drawingContext.DrawRoundedRectangle(brush, null, bounds, cornerRadius.TopLeft, cornerRadius.TopLeft);
                 }
                 bounds = Rect.Empty;
             }
             else
             {
-                if (borderThickness.Top > 0.0)
+                if (thickness.Top > 0.0)
                 {
-                    var borderPen = GetOrCreateBorderPen(borderBrush, borderThickness);
-                    var halfThickness = borderPen.Thickness * 0.5;
+                    var pen = GetOrCreateBorderPen(brush, thickness);
+                    var halfThickness = pen.Thickness * 0.5;
                     var rect = new Rect(
                         new Point(bounds.Left + halfThickness, bounds.Top + halfThickness),
                         new Point(bounds.Width - halfThickness, bounds.Height - halfThickness));
 
-                    drawingContext.DrawRoundedRectangle(null, borderPen, rect,
+                    drawingContext.DrawRoundedRectangle(null, pen, rect,
                         cornerRadius.TopLeft, cornerRadius.TopLeft);
                 }
-                bounds = DeflateRect(bounds, borderThickness);
+                bounds = DeflateRect(bounds, thickness);
             }
         }
     }
@@ -233,11 +307,11 @@ public sealed class CardPattern : Decorator
         return pen;
     }
 
-    private static Rect DeflateRect(in Rect rect, in Thickness thickess)
+    private static Rect DeflateRect(in Rect rect, in Thickness thickness)
     {
-        return new(rect.Left + thickess.Left, rect.Top + thickess.Top,
-            Math.Max(0.0, rect.Width - thickess.Left - thickess.Right),
-            Math.Max(0.0, rect.Height - thickess.Top - thickess.Bottom));
+        return new(rect.Left + thickness.Left, rect.Top + thickness.Top,
+            Math.Max(0.0, rect.Width - thickness.Left - thickness.Right),
+            Math.Max(0.0, rect.Height - thickness.Top - thickness.Bottom));
     }
 
     private static Size CollapseThickness(in Thickness thickness)
