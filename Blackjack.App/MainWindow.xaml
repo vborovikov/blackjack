@@ -89,6 +89,19 @@
                         <ctrl:CardControl Value="JD" />
                         <ctrl:CardControl Value="7C" />
                         <ctrl:CardControl Value="KH" />
+                        <ctrl:CardControl Value="9D" />
+                        <ctrl:CardControl Value="9S" />
+                        <ctrl:CardControl Value="9H" />
+                        <ctrl:CardControl Value="9C" />
+                        <ctrl:CardControl Value="JS" />
+                        <ctrl:CardControl Value="JH" />
+                        <ctrl:CardControl Value="JC" />
+                        <ctrl:CardControl Value="JD" />
+                        <ctrl:CardControl Value="JH" />
+                        <ctrl:CardControl Value="JC" />
+                        <ctrl:CardControl Value="3S" />
+                        <ctrl:CardControl Value="3H" />
+                        <ctrl:CardControl Value="3C" />
                     </ctrl:CardStackPanel>
                 </Border>
             </TabItem>

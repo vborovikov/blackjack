@@ -94,49 +94,48 @@ public class CardStackPanel : StackPanel
     /// <summary>
     /// When overridden in a derived class, positions child elements and determines a size for a <see cref="T:System.Windows.FrameworkElement"/> derived class.
     /// </summary>
-    /// <param name="finalSize">The final area within the parent that this element should use to arrange itself and its children.</param>
+    /// <param name="arrangeSize">The final area within the parent that this element should use to arrange itself and its children.</param>
     /// <returns>The actual size used.</returns>
-    protected override Size ArrangeOverride(Size finalSize)
+    protected override Size ArrangeOverride(Size arrangeSize)
     {
         double x = 0, y = 0;
         var n = 0;
-        var total = this.Children.Count;
 
         //  Get the offsets that each element will need.
         var offsets = CalculateOffsets();
         
         //  If we're going to pass the bounds, deal with it.
-        if ((this.ActualWidth > 0 && finalSize.Width > this.ActualWidth) || 
-            (this.ActualHeight > 0 && finalSize.Height > this.ActualHeight))
+        if ((this.ActualWidth > 0 && arrangeSize.Width > this.ActualWidth) || 
+            (this.ActualHeight > 0 && arrangeSize.Height > this.ActualHeight))
         {
             //  Work out the amount we have to remove from the offsets.
-            var overrunX = finalSize.Width - this.ActualWidth;
-            var overrunY = finalSize.Height - this.ActualHeight;
+            var overrunX = arrangeSize.Width - this.ActualWidth;
+            var overrunY = arrangeSize.Height - this.ActualHeight;
 
             //  Now as a per-offset.
-            var dx = overrunX / offsets.Count;
-            var dy = overrunY / offsets.Count;
+            var dx = overrunX / offsets.Length;
+            var dy = overrunY / offsets.Length;
 
             //  Now nudge each offset.
-            for (var i = 0; i < offsets.Count; i++)
+            for (var i = 0; i < offsets.Length; i++)
             {
-                offsets[i] = new Size(Math.Max(0, offsets[i].Width - dx), Math.Max(0, offsets[i].Height - dy));
+                offsets[i] = new Size(Math.Max(0d, offsets[i].Width - dx), Math.Max(0d, offsets[i].Height - dy));
             }
 
             //  Make sure the final size isn't increased past what we can handle.
-            finalSize.Width -= overrunX;
-            finalSize.Height -= overrunY;
+            arrangeSize.Width -= overrunX;
+            arrangeSize.Height -= overrunY;
         }
 
         //  Arrange each child.
-        foreach (UIElement child in this.Children)
+        foreach (var child in this.Children)
         {
             //  Get the card. If we don't have one, skip.
             if (child is not CardControl card)
                 continue;
 
             //  Arrange the child at x,y (the first will be at 0,0)
-            child.Arrange(new Rect(x, y, child.DesiredSize.Width, child.DesiredSize.Height));
+            card.Arrange(new Rect(x, y, card.DesiredSize.Width, card.DesiredSize.Height));
 
             //  Update the offset.
             x += offsets[n].Width;
@@ -146,20 +145,19 @@ public class CardStackPanel : StackPanel
             n++;
         }
 
-        return finalSize;
+        return arrangeSize;
     }
 
     /// <summary>
     /// Calculates the offsets.
     /// </summary>
     /// <returns></returns>
-    private List<Size> CalculateOffsets()
+    private Size[] CalculateOffsets()
     {
         //  Calculate the offsets on a card by card basis.
-        var offsets = new List<Size>();
-
         var n = 0;
         var total = this.Children.Count;
+        var offsets = new List<Size>(total);
 
         //  Go through each card.
         foreach (UIElement child in this.Children)
@@ -235,7 +233,7 @@ public class CardStackPanel : StackPanel
             offsets.Add(offset);
         }
 
-        return offsets;
+        return offsets.ToArray();
     }
 
     /// <summary>
