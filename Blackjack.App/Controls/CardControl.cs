@@ -4,6 +4,8 @@ using System.Collections.Frozen;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -80,6 +82,22 @@ public class CardControl : Control
     [Bindable(false), Browsable(false)]
     public CardRank Rank => (CardRank)GetValue(RankProperty);
 
+    public static readonly DependencyProperty IsSelectedProperty = 
+        Selector.IsSelectedProperty.AddOwner(typeof(CardControl), new FrameworkPropertyMetadata(false, 
+            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal));
+
+    /// <summary>
+    ///     Indicates whether this ListBoxItem is selected.
+    /// </summary>
+    [Bindable(true), Category("Appearance")]
+    public bool IsSelected
+    {
+        get { return (bool)GetValue(IsSelectedProperty); }
+        set { SetValue(IsSelectedProperty, value); }
+    }
+
+    private HandControl? ParentHand => ItemsControl.ItemsControlFromItemContainer(this) as HandControl;
+
     protected virtual void OnValueChanged(DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is string cardStr && Card.TryParse(cardStr, out var card))
@@ -95,6 +113,24 @@ public class CardControl : Control
     {
         base.OnApplyTemplate();
         ChangeBackground(this.Value);
+    }
+
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        if (!e.Handled)
+        {
+            e.Handled = true;
+            HandleMouseButtonDown(MouseButton.Left);
+        }
+        base.OnMouseLeftButtonDown(e);
+    }
+
+    private void HandleMouseButtonDown(MouseButton mouseButton)
+    {
+        if (Focus())
+        {
+            this.ParentHand?.NotifyCardClicked(this, mouseButton);
+        }
     }
 
     private void ChangeBackground(string? value)

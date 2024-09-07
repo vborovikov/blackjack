@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Blackjack.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         xmlns:ctrl="clr-namespace:Blackjack.App.Controls"
         xmlns:ai="clr-namespace:Blackjack.App.Interactivity"
         xmlns:p="clr-namespace:Blackjack.App.Presentation"
@@ -75,7 +76,7 @@
                 <Border Background="PapayaWhip"
                         BorderThickness="4"
                         Margin="{StaticResource uxDoubleMargin}">
-                    <StackPanel Orientation="Horizontal">
+                    <WrapPanel Orientation="Horizontal">
                         <ctrl:HandPanel HorizontalItemOffset="10"
                                         Margin="{StaticResource uxDoubleMargin}">
                             <ctrl:CardControl Value="7C" />
@@ -106,8 +107,15 @@
                                         Margin="{StaticResource uxDoubleMargin}">
                             <ctrl:CardControl Value="7C" />
                         </ctrl:HandPanel>
-                    </StackPanel>
+                    </WrapPanel>
                 </Border>
+            </TabItem>
+            <TabItem Header="Play">
+                <ctrl:HandControl SelectedIndex="1">
+                    <sys:String>7D</sys:String>
+                    <sys:String>KH</sys:String>
+                    <sys:String>AS</sys:String>
+                </ctrl:HandControl>
             </TabItem>
         </TabControl>
     </DockPanel>
