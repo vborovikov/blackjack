@@ -1,7 +1,6 @@
 ﻿namespace Blackjack.App.Controls;
 
 using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,21 +37,43 @@ public class HandPanel : Panel
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var desiredWidth = 0d;
-        var desiredHeight = 0d;
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 1 and < 6;
+        var doTransform = childCount is > 0 and < 6;
+
+        var renderBounds = new Rect();
+        var angle = GetInitialRotationAngle(childCount);
+        var x = 0d; var y = 0d;
+
+        var desiredWidth = 0d;
+        var desiredHeight = 0d;
 
         foreach (UIElement child in this.Children)
         {
             child.Measure(availableSize);
-            desiredWidth += horizontalOffset;
-            desiredHeight += verticalOffset;
+
+            if (doTransform)
+            {
+                var desiredBounds = new Rect(x, y, child.DesiredSize.Width, child.DesiredSize.Height);
+
+                var rotateMatrix = new Matrix();
+                rotateMatrix.RotateAt(angle, desiredBounds.Width / 2, desiredBounds.Height);
+                desiredBounds.Transform(rotateMatrix);
+                renderBounds.Union(desiredBounds);
+
+                angle += 15;
+                x += horizontalOffset;
+                y += verticalOffset;
+            }
+            else
+            {
+                desiredWidth += horizontalOffset;
+                desiredHeight += verticalOffset;
+            }
         }
 
-        if (this.Children is [.., UIElement lastChild])
+        if (!doTransform && this.Children is [.., UIElement lastChild])
         {
             desiredWidth += lastChild.DesiredSize.Width - horizontalOffset;
             desiredHeight += lastChild.DesiredSize.Height - verticalOffset;
@@ -60,20 +81,16 @@ public class HandPanel : Panel
 
         if (doTransform)
         {
-            desiredWidth += GetTransformOffsetWidth(childCount, horizontalOffset);
-            desiredHeight += GetTransformOffsetHeight(childCount, verticalOffset);
-        }
-
-        if (!double.IsPositiveInfinity(availableSize.Width))
-        {
-            desiredWidth = availableSize.Width;
-        }
-        if (!double.IsPositiveInfinity(availableSize.Height))
-        {
-            desiredHeight = availableSize.Height;
+            desiredWidth = renderBounds.Width;
+            desiredHeight = renderBounds.Height;
         }
 
         return new(desiredWidth, desiredHeight);
+    }
+
+    private static double GetInitialRotationAngle(int childCount)
+    {
+        return -15d * (childCount / 2);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -81,15 +98,25 @@ public class HandPanel : Panel
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 1 and < 6;
-        var x = doTransform ? GetTransformOffsetWidth(childCount, horizontalOffset) : 0d;
-        var y = doTransform ? GetTransformOffsetHeight(childCount, verticalOffset) : 0d;
-        
+        var doTransform = childCount is > 0 and < 6;
+        var x = 0d; var y = 0d;
+        var angle = GetInitialRotationAngle(childCount);
+
+        if (doTransform && this.Children is [UIElement firstChild, ..])
+        {
+            var desiredBounds = new Rect(x, y, firstChild.DesiredSize.Width, firstChild.DesiredSize.Height);
+            var rotateMatrix = new Matrix();
+            rotateMatrix.RotateAt(angle, desiredBounds.Width / 2, desiredBounds.Height);
+            desiredBounds.Transform(rotateMatrix);
+
+            x = Math.Abs(desiredBounds.X);
+            y = Math.Abs(desiredBounds.Y);
+        }
+
         foreach (UIElement child in this.Children)
         {
             if (doTransform && child.RenderTransform is not RotateTransform)
             {
-                child.RenderTransformOrigin = new(0.5, 1);
                 child.RenderTransform = new RotateTransform();
             }
 
@@ -101,12 +128,12 @@ public class HandPanel : Panel
 
         if (doTransform)
         {
-            var angle = -15d * (childCount / 2);
             foreach (UIElement child in this.Children)
             {
                 if (child.RenderTransform is RotateTransform rotate)
                 {
-                    //rotate.Angle = angle;
+                    rotate.CenterX = child.DesiredSize.Width / 2;
+                    rotate.CenterY = child.DesiredSize.Height;
                     rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
                     angle += 15;
                 }
@@ -114,16 +141,6 @@ public class HandPanel : Panel
         }
 
         return finalSize;
-    }
-
-    private static double GetTransformOffsetWidth(int childCount, double horizontalOffset)
-    {
-        return horizontalOffset * childCount * 2 - horizontalOffset;
-    }
-
-    private static double GetTransformOffsetHeight(int childCount, double verticalOffset)
-    {
-        return Math.Max(verticalOffset, 5d) * childCount / 2;
     }
 
     private static DoubleAnimation MakeAnimation(double to, EventHandler? onCompleted = null)
