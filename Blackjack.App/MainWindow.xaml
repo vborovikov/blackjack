@@ -75,34 +75,38 @@
                 <Border Background="PapayaWhip"
                         BorderThickness="4"
                         Margin="{StaticResource uxDoubleMargin}">
-                    <ctrl:CardStackPanel Orientation="Horizontal"
-                                         OffsetMode="EveryCard"
-                                         FaceDownOffset="30"
-                                         FaceUpOffset="45"
-                                         Margin="{StaticResource uxDoubleMargin}">
-                        <ctrl:CardControl Value="{x:Null}" />
-                        <ctrl:CardControl Value="" />
-                        <ctrl:CardControl Value="0X" />
-                        <ctrl:CardControl Value="AX" />
-                        <ctrl:CardControl Value="QS" />
-                        <ctrl:CardControl Value="5H" />
-                        <ctrl:CardControl Value="JD" />
-                        <ctrl:CardControl Value="7C" />
-                        <ctrl:CardControl Value="KH" />
-                        <ctrl:CardControl Value="9D" />
-                        <ctrl:CardControl Value="9S" />
-                        <ctrl:CardControl Value="9H" />
-                        <ctrl:CardControl Value="9C" />
-                        <ctrl:CardControl Value="JS" />
-                        <ctrl:CardControl Value="JH" />
-                        <ctrl:CardControl Value="JC" />
-                        <ctrl:CardControl Value="JD" />
-                        <ctrl:CardControl Value="JH" />
-                        <ctrl:CardControl Value="JC" />
-                        <ctrl:CardControl Value="3S" />
-                        <ctrl:CardControl Value="3H" />
-                        <ctrl:CardControl Value="3C" />
-                    </ctrl:CardStackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <ctrl:HandPanel HorizontalItemOffset="10"
+                                        Margin="{StaticResource uxDoubleMargin}">
+                            <ctrl:CardControl Value="7C" />
+                            <ctrl:CardControl Value="KH" />
+                            <ctrl:CardControl Value="9D" />
+                            <ctrl:CardControl Value="9S" />
+                            <ctrl:CardControl Value="9H" />
+                        </ctrl:HandPanel>
+                        <ctrl:HandPanel HorizontalItemOffset="10"
+                                        Margin="{StaticResource uxDoubleMargin}">
+                            <ctrl:CardControl Value="7C" />
+                            <ctrl:CardControl Value="KH" />
+                            <ctrl:CardControl Value="9D" />
+                            <ctrl:CardControl Value="9S" />
+                        </ctrl:HandPanel>
+                        <ctrl:HandPanel HorizontalItemOffset="10"
+                                        Margin="{StaticResource uxDoubleMargin}">
+                            <ctrl:CardControl Value="7C" />
+                            <ctrl:CardControl Value="KH" />
+                            <ctrl:CardControl Value="9D" />
+                        </ctrl:HandPanel>
+                        <ctrl:HandPanel HorizontalItemOffset="10"
+                                        Margin="{StaticResource uxDoubleMargin}">
+                            <ctrl:CardControl Value="7C" />
+                            <ctrl:CardControl Value="KH" />
+                        </ctrl:HandPanel>
+                        <ctrl:HandPanel HorizontalItemOffset="10"
+                                        Margin="{StaticResource uxDoubleMargin}">
+                            <ctrl:CardControl Value="7C" />
+                        </ctrl:HandPanel>
+                    </StackPanel>
                 </Border>
             </TabItem>
         </TabControl>
