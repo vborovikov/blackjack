@@ -8,6 +8,8 @@ using System.Windows.Media.Animation;
 
 public class HandPanel : Panel
 {
+    private const double RotationAngle = 15d;
+
     public static readonly DependencyProperty HorizontalItemOffsetProperty =
         DependencyProperty.Register(nameof(HorizontalItemOffset), typeof(double), typeof(HandPanel),
             new FrameworkPropertyMetadata(5d, FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -40,7 +42,7 @@ public class HandPanel : Panel
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 0 and < 6;
+        var doTransform = childCount is > 1 and < 6;
 
         var renderBounds = new Rect();
         var angle = GetInitialRotationAngle(childCount);
@@ -62,7 +64,7 @@ public class HandPanel : Panel
                 desiredBounds.Transform(rotateMatrix);
                 renderBounds.Union(desiredBounds);
 
-                angle += 15;
+                angle += RotationAngle;
                 x += horizontalOffset;
                 y += verticalOffset;
             }
@@ -88,17 +90,12 @@ public class HandPanel : Panel
         return new(desiredWidth, desiredHeight);
     }
 
-    private static double GetInitialRotationAngle(int childCount)
-    {
-        return -15d * (childCount / 2);
-    }
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 0 and < 6;
+        var doTransform = childCount is > 1 and < 6;
         var x = 0d; var y = 0d;
         var angle = GetInitialRotationAngle(childCount);
 
@@ -135,12 +132,17 @@ public class HandPanel : Panel
                     rotate.CenterX = child.DesiredSize.Width / 2;
                     rotate.CenterY = child.DesiredSize.Height;
                     rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
-                    angle += 15;
+                    angle += RotationAngle;
                 }
             }
         }
 
         return finalSize;
+    }
+
+    private static double GetInitialRotationAngle(int childCount)
+    {
+        return -RotationAngle * (childCount / 2);
     }
 
     private static DoubleAnimation MakeAnimation(double to, EventHandler? onCompleted = null)
