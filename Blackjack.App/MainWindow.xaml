@@ -61,9 +61,14 @@
         </StatusBar>
 
         <TabControl SelectedIndex="{ai:Setting MainWindowTab, TargetNullValue=0, Converter={x:Static ai:NumberConverter.Instance}}">
+            <TabControl.Background>
+                <ImageBrush ImageSource="\Resources\Background.jpg"
+                            Stretch="Fill" />
+            </TabControl.Background>
             <TabItem Header="Strategy">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto">
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="{StaticResource uxDoubleMargin}">
                     <StackPanel Orientation="Horizontal">
                         <ctrl:StrategyControl Rules="{Binding Player1}"
                                               Header="{Binding Player1.Name}" />
@@ -73,49 +78,48 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Table">
-                <Border Background="PapayaWhip"
-                        BorderThickness="4"
-                        Margin="{StaticResource uxDoubleMargin}">
-                    <WrapPanel Orientation="Horizontal">
-                        <ctrl:HandPanel HorizontalItemOffset="10"
-                                        Margin="{StaticResource uxDoubleMargin}">
-                            <ctrl:CardControl Value="7C" />
-                            <ctrl:CardControl Value="KH" />
-                            <ctrl:CardControl Value="9D" />
-                            <ctrl:CardControl Value="9S" />
-                            <ctrl:CardControl Value="9H" />
-                        </ctrl:HandPanel>
-                        <ctrl:HandPanel HorizontalItemOffset="10"
-                                        Margin="{StaticResource uxDoubleMargin}">
-                            <ctrl:CardControl Value="7C" />
-                            <ctrl:CardControl Value="KH" />
-                            <ctrl:CardControl Value="9D" />
-                            <ctrl:CardControl Value="9S" />
-                        </ctrl:HandPanel>
-                        <ctrl:HandPanel HorizontalItemOffset="10"
-                                        Margin="{StaticResource uxDoubleMargin}">
-                            <ctrl:CardControl Value="7C" />
-                            <ctrl:CardControl Value="KH" />
-                            <ctrl:CardControl Value="9D" />
-                        </ctrl:HandPanel>
-                        <ctrl:HandPanel HorizontalItemOffset="10"
-                                        Margin="{StaticResource uxDoubleMargin}">
-                            <ctrl:CardControl Value="7C" />
-                            <ctrl:CardControl Value="KH" />
-                        </ctrl:HandPanel>
-                        <ctrl:HandPanel HorizontalItemOffset="10"
-                                        Margin="{StaticResource uxDoubleMargin}">
-                            <ctrl:CardControl Value="7C" />
-                        </ctrl:HandPanel>
-                    </WrapPanel>
-                </Border>
+                <WrapPanel Orientation="Horizontal"
+                           Margin="{StaticResource uxDoubleMargin}">
+                    <ctrl:HandPanel HorizontalItemOffset="10"
+                                    Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="7C" />
+                        <ctrl:CardControl Value="KH" />
+                        <ctrl:CardControl Value="9D" />
+                        <ctrl:CardControl Value="9S" />
+                        <ctrl:CardControl Value="9H" />
+                    </ctrl:HandPanel>
+                    <ctrl:HandPanel HorizontalItemOffset="10"
+                                    Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="7C" />
+                        <ctrl:CardControl Value="KH" />
+                        <ctrl:CardControl Value="9D" />
+                        <ctrl:CardControl Value="9S" />
+                    </ctrl:HandPanel>
+                    <ctrl:HandPanel HorizontalItemOffset="10"
+                                    Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="7C" />
+                        <ctrl:CardControl Value="KH" />
+                        <ctrl:CardControl Value="9D" />
+                    </ctrl:HandPanel>
+                    <ctrl:HandPanel HorizontalItemOffset="10"
+                                    Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="7C" />
+                        <ctrl:CardControl Value="KH" />
+                    </ctrl:HandPanel>
+                    <ctrl:HandPanel HorizontalItemOffset="10"
+                                    Margin="{StaticResource uxDoubleMargin}">
+                        <ctrl:CardControl Value="7C" />
+                    </ctrl:HandPanel>
+                </WrapPanel>
             </TabItem>
             <TabItem Header="Play">
-                <ctrl:HandControl SelectedIndex="1">
-                    <sys:String>7D</sys:String>
-                    <sys:String>KH</sys:String>
-                    <sys:String>AS</sys:String>
-                </ctrl:HandControl>
+                <Grid Margin="{StaticResource uxDoubleMargin}">
+                    <ctrl:HandControl SelectedIndex="1">
+                        <sys:String>7D</sys:String>
+                        <sys:String>KH</sys:String>
+                        <sys:String>AS</sys:String>
+                    </ctrl:HandControl>
+                </Grid>
             </TabItem>
         </TabControl>
     </DockPanel>

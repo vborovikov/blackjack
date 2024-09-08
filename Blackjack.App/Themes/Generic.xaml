@@ -114,8 +114,6 @@
     </Style>
 
     <Style TargetType="{x:Type local:CardControl}">
-        <!--<Setter Property="Background"
-                Value="WhiteSmoke" />-->
         <Setter Property="BorderBrush"
                 Value="DarkSlateGray" />
         <Setter Property="BorderThickness"
@@ -132,28 +130,21 @@
                 Value="Hand" />
         <Setter Property="UseLayoutRounding"
                 Value="True" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="5"
+                                  ShadowDepth="3"
+                                  Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:CardControl}">
-                    <Border Background="{TemplateBinding Background}"
+                    <Border x:Name="LayoutRoot"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}">
-                        <!--<local:Bitmap>
-                            <local:Bitmap.Source>
-                                <Binding Path="Value"
-                                         RelativeSource="{RelativeSource TemplatedParent}"
-                                         StringFormat="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/{0}.png"
-                                         TargetNullValue="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/00.png"
-                                         FallbackValue="pack://application:,,,/Blackjack.App;component/Resources/Decks/Classic/00.png" />
-                            </local:Bitmap.Source>
-                        </local:Bitmap>-->
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="5"
-                                              ShadowDepth="3"
-                                              Opacity="0.5" />
-                        </Border.Effect>
-                    </Border>
+                            CornerRadius="{TemplateBinding CornerRadius}" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -174,13 +165,8 @@
                     <Style.Triggers>
                         <Trigger Property="IsSelected"
                                  Value="True">
-                            <Setter Property="Panel.ZIndex"
-                                    Value="1" />
-                        </Trigger>
-                        <Trigger Property="IsSelected"
-                                 Value="False">
-                            <Setter Property="Panel.ZIndex"
-                                    Value="0" />
+                            <Setter Property="BorderBrush"
+                                    Value="Gold" />
                         </Trigger>
                     </Style.Triggers>
                 </Style>

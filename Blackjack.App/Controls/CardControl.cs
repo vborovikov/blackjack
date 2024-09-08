@@ -9,7 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-[TemplatePart(Name = TemplateParts.LayoutRoot, Type = typeof(Panel))]
+[TemplatePart(Name = TemplateParts.LayoutRoot, Type = typeof(Border))]
 public class CardControl : Control
 {
     private static class TemplateParts
@@ -39,7 +39,7 @@ public class CardControl : Control
                 brush.Freeze();
 
                 return (Brush)brush;
-            }, StringComparer.Ordinal);
+            }, StringComparer.OrdinalIgnoreCase);
     }
 
     public static readonly DependencyProperty CornerRadiusProperty =
@@ -87,9 +87,6 @@ public class CardControl : Control
             FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
             new PropertyChangedCallback(OnIsSelectedChanged)));
 
-    /// <summary>
-    ///     Indicates whether this ListBoxItem is selected.
-    /// </summary>
     [Bindable(true), Category("Appearance")]
     public bool IsSelected
     {
