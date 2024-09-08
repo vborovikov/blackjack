@@ -1,6 +1,7 @@
 ﻿namespace Blackjack.App.Controls;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -123,40 +124,48 @@ public class HandPanel : Panel
         {
             foreach (UIElement child in this.Children)
             {
-                var rotate = GetRotateTransform(child);
-                rotate.CenterX = child.DesiredSize.Width / 2;
-                rotate.CenterY = child.DesiredSize.Height;
-                rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
-                angle += RotationAngle;
+                if (TryGetRotateTransform(child, out var rotate))
+                {
+                    rotate.CenterX = child.DesiredSize.Width / 2;
+                    rotate.CenterY = child.DesiredSize.Height;
+                    rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
+                    angle += RotationAngle;
+                }
             }
         }
 
         return finalSize;
     }
 
-    private static RotateTransform GetRotateTransform(UIElement element)
+    private static bool TryGetRotateTransform(UIElement element, [MaybeNullWhen(false)] out RotateTransform rotate)
     {
-        //todo: check IsFrozen
+        if (element.RenderTransform is RotateTransform { IsFrozen: false } existingRotate)
+        {
+            rotate = existingRotate;
+            return true;
+        }
 
-        if (element.RenderTransform is TransformGroup group)
+        if (element.RenderTransform is TransformGroup { IsFrozen: false } group)
         {
             if (group.Children.OfType<RotateTransform>().FirstOrDefault() is not RotateTransform rotateInGroup)
             {
                 rotateInGroup = new RotateTransform();
                 group.Children.Add(rotateInGroup);
             }
-            
-            return rotateInGroup;
-        }
 
-        var rotate = new RotateTransform();
+            rotate = rotateInGroup;
+            return true;
+        }
 
         if (element.RenderTransform is null || element.RenderTransform == Transform.Identity)
         {
+            rotate = new RotateTransform();
             element.RenderTransform = rotate;
+            return true;
         }
-        else
+        else if (!element.RenderTransform.IsFrozen)
         {
+            rotate = new RotateTransform();
             element.RenderTransform = new TransformGroup
             {
                 Children =
@@ -165,9 +174,11 @@ public class HandPanel : Panel
                     rotate,
                 }
             };
+            return true;
         }
 
-        return rotate;
+        rotate = default;
+        return false;
     }
 
     private static double GetInitialRotationAngle(int childCount)
