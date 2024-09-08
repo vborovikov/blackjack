@@ -44,7 +44,7 @@ public class HandPanel : Panel
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 1 and < 6;
+        var doTransform = CanRotate(childCount);
 
         var renderBounds = new Rect();
         var angle = GetInitialRotationAngle(childCount);
@@ -97,7 +97,7 @@ public class HandPanel : Panel
         var horizontalOffset = this.HorizontalItemOffset;
         var verticalOffset = this.VerticalItemOffset;
         var childCount = this.Children.Count;
-        var doTransform = childCount is > 1 and < 6;
+        var doTransform = CanRotate(childCount);
         var x = 0d; var y = 0d;
         var angle = GetInitialRotationAngle(childCount);
 
@@ -181,14 +181,17 @@ public class HandPanel : Panel
         return false;
     }
 
-    private static double GetInitialRotationAngle(int childCount)
+    private static bool CanRotate(int childCount) => childCount is > 0 and < 6;
+
+    private static double GetInitialRotationAngle(int childCount) => childCount switch
     {
-        return -RotationAngle * (childCount / 2);
-    }
+        1 => RotationAngle,
+        _ => -RotationAngle * (childCount / 2)
+    };
 
     private static DoubleAnimation MakeAnimation(double to, EventHandler? onCompleted = null)
     {
-        var anim = new DoubleAnimation(to, TimeSpan.FromMilliseconds(500))
+        var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(500))
         {
             AccelerationRatio = 0.2,
             DecelerationRatio = 0.7
@@ -196,9 +199,9 @@ public class HandPanel : Panel
 
         if (onCompleted is not null)
         {
-            anim.Completed += onCompleted;
+            animation.Completed += onCompleted;
         }
 
-        return anim;
+        return animation;
     }
 }
