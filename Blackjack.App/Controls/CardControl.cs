@@ -84,7 +84,8 @@ public class CardControl : Control
 
     public static readonly DependencyProperty IsSelectedProperty = 
         Selector.IsSelectedProperty.AddOwner(typeof(CardControl), new FrameworkPropertyMetadata(false, 
-            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal));
+            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
+            new PropertyChangedCallback(OnIsSelectedChanged)));
 
     /// <summary>
     ///     Indicates whether this ListBoxItem is selected.
@@ -94,6 +95,21 @@ public class CardControl : Control
     {
         get { return (bool)GetValue(IsSelectedProperty); }
         set { SetValue(IsSelectedProperty, value); }
+    }
+
+    private static void OnIsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var card = (CardControl)d;
+        var isSelected = (bool)e.NewValue;
+
+        if (isSelected)
+        {
+            card.RaiseEvent(new RoutedEventArgs(Selector.SelectedEvent, card));
+        }
+        else
+        {
+            card.RaiseEvent(new RoutedEventArgs(Selector.UnselectedEvent, card));
+        }
     }
 
     private HandControl? ParentHand => ItemsControl.ItemsControlFromItemContainer(this) as HandControl;
