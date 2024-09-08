@@ -1,6 +1,7 @@
 ﻿namespace Blackjack.App.Controls;
 
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -112,11 +113,6 @@ public class HandPanel : Panel
 
         foreach (UIElement child in this.Children)
         {
-            if (doTransform && child.RenderTransform is not RotateTransform)
-            {
-                child.RenderTransform = new RotateTransform();
-            }
-
             child.Arrange(new(x, y, child.DesiredSize.Width, child.DesiredSize.Height));
 
             x += horizontalOffset;
@@ -127,17 +123,51 @@ public class HandPanel : Panel
         {
             foreach (UIElement child in this.Children)
             {
-                if (child.RenderTransform is RotateTransform rotate)
-                {
-                    rotate.CenterX = child.DesiredSize.Width / 2;
-                    rotate.CenterY = child.DesiredSize.Height;
-                    rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
-                    angle += RotationAngle;
-                }
+                var rotate = GetRotateTransform(child);
+                rotate.CenterX = child.DesiredSize.Width / 2;
+                rotate.CenterY = child.DesiredSize.Height;
+                rotate.BeginAnimation(RotateTransform.AngleProperty, MakeAnimation(angle));
+                angle += RotationAngle;
             }
         }
 
         return finalSize;
+    }
+
+    private static RotateTransform GetRotateTransform(UIElement element)
+    {
+        //todo: check IsFrozen
+
+        if (element.RenderTransform is TransformGroup group)
+        {
+            if (group.Children.OfType<RotateTransform>().FirstOrDefault() is not RotateTransform rotateInGroup)
+            {
+                rotateInGroup = new RotateTransform();
+                group.Children.Add(rotateInGroup);
+            }
+            
+            return rotateInGroup;
+        }
+
+        var rotate = new RotateTransform();
+
+        if (element.RenderTransform is null || element.RenderTransform == Transform.Identity)
+        {
+            element.RenderTransform = rotate;
+        }
+        else
+        {
+            element.RenderTransform = new TransformGroup
+            {
+                Children =
+                {
+                    element.RenderTransform,
+                    rotate,
+                }
+            };
+        }
+
+        return rotate;
     }
 
     private static double GetInitialRotationAngle(int childCount)
