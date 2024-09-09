@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
+[StyleTypedProperty(Property = nameof(ItemContainerStyle), StyleTargetType = typeof(CardControl))]
 public class HandControl : Selector
 {
     static HandControl()
