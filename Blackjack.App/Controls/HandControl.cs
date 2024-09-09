@@ -1,6 +1,7 @@
 ﻿namespace Blackjack.App.Controls;
 
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
@@ -9,6 +10,11 @@ public class HandControl : Selector
     static HandControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(HandControl), new FrameworkPropertyMetadata(typeof(HandControl)));
+        
+        var template = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(HandPanel)));
+        template.Seal();
+        ItemsPanelProperty.OverrideMetadata(typeof(HandControl), new FrameworkPropertyMetadata(template));
+
         EventManager.RegisterClassHandler(typeof(HandControl), Mouse.MouseUpEvent, new MouseButtonEventHandler(HandleMouseButtonUp), true);
     }
 

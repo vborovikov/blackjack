@@ -151,14 +151,6 @@
     </Style>
 
     <Style TargetType="{x:Type local:HandControl}">
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <local:HandPanel IsItemsHost="True"
-                                     HorizontalItemOffset="10" />
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="{x:Type local:CardControl}">
